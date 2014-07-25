@@ -37,20 +37,19 @@ class WeightedDistanceScore(_Scorer):
         if len(self._needle) == 0:
             return 0
 
-        inc = 0
         score = 0
         needle_index = 0
         needle_len = len(self._needle)
+        cur_needle = self._needle[needle_index]
 
         for c in iter(path):
-            if c == self._needle[needle_index]:
+            if c == cur_needle:
                 needle_index += 1
-                inc = 0
                 if needle_index == needle_len:
                     break
+                cur_needle = self._needle[needle_index]
             else:
                 score += needle_index
-                inc += 1
         else:
             return -1
 
