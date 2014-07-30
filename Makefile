@@ -1,7 +1,7 @@
 VIRTUALENV ?= /usr/bin/virtualenv
 
 ACTIVATE = source virtualenv/bin/activate
-TESTS = $(wildcard test/*_test.py)
+TESTS = $(wildcard test/*.py)
 
 .PHONY: test
 

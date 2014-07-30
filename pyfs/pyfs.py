@@ -1,32 +1,18 @@
-import collections
-import re
 import sys
 
-import nltk
+import envoy
 
-class _Scorer(object):
-    def update(self, needle):
-        raise NotImplemented()
+def run_stdout(cmd, env=None, cwd=None):
+    child = envoy.run(cmd, env=env)
+    if child.status_code != 0:
+        raise SubprocessError(cmd)
+    return child.std_out
 
-    def score(self, needle, haystack):
-        raise NotImplemented()
+class SubprocessError(Exception):
+    def __init__(self, cmd):
+        super(SubprocessError, self).__init__('Failed to run: "%s"' % (cmd,))
 
-class SimpleRegexScore(_Scorer):
-    def __init__(self):
-        self._needle = ''
-        self._regex = re.compile('.*')
-
-    def update(self, needle):
-        self._needle = needle
-        self._regex = re.compile('.*%s.*' % '.*'.join(iter(needle)))
-
-    def score(self, path):
-        if self._regex.search(path) is not None:
-            return nltk.edit_distance(path, self._needle)
-        else:
-            return -1
-
-class WeightedDistanceScore(_Scorer):
+class WeightedDistanceScore(object):
     def __init__(self):
         self._needle = ''
 
@@ -34,75 +20,61 @@ class WeightedDistanceScore(_Scorer):
         self._needle = needle
 
     def score(self, path):
-        if len(self._needle) == 0:
-            return 0
-
-        score = 0
-        needle_index = 0
         needle_len = len(self._needle)
-        cur_needle = self._needle[needle_index]
 
-        for c in iter(path):
-            if c == cur_needle:
-                needle_index += 1
-                if needle_index == needle_len:
-                    break
-                cur_needle = self._needle[needle_index]
-            else:
-                score += needle_index
-        else:
-            return -1
+        mult = path.find(self._needle[-1])
+        if mult < 0:
+            return (-1, '')
 
-        return score
+        return (mult * needle_len, path[mult + 1:])
 
 class FuzzyMatch(object):
-    def __init__(self, library=None, scorer=None):
-        self._library = None
-        if library is not None:
-            self._library = dict(zip((s for s in library), [0] * len(library)))
+    def __init__(self, files=None, scorer=None):
+        self._library = {}
+        if files is not None:
+            for f in files:
+                self._library[f] = {
+                        'score': 0,
+                        'remainder': f}
         self._matches = self._library.copy()
-
         self._scorer = scorer
+        self._search = ''
 
     def update_scores(self, search):
-        self._scorer.update(search)
+        if len(search) < len(self._search):
+            self._matches = self._library.copy()
 
-        for haystack in self._matches.keys():
-            score = self._scorer.score(haystack)
+        self._scorer.update(search)
+        scorer = self._scorer.score
+
+        for path, vals in self._matches.items():
+            score, remainder = scorer(vals['remainder'])
             if score < 0:
-                del self._matches[haystack]
+                del self._matches[path]
             else:
-                self._matches[haystack] = score
+                self._matches[path]['score'] = score
+                self._matches[path]['remainder'] = remainder
 
     def top_matches(self, depth=10):
-        ret = sorted(self._matches, key=self._matches.get)[:depth]
+        ret = sorted(self._matches, key=lambda x: self._matches[x]['score'])[:depth]
         ret.reverse()
         return ret
 
-def main():
-    import cProfile
+class Scanner(object):
+    def __init__(self, scanner_conf):
+        self._dir_type = None
+        self._conf = scanner_conf
 
-    runs = {}
-    files = open(sys.argv[2]).read().split()
+        c = envoy.run('git rev-parse')
+        if c.status_code == 0:
+            self._dir_type = 'git'
 
-    scorers = (
-    #        'SimpleRegexScore',
-            'WeightedDistanceScore',
-    )
+    def scan(self):
+        try:
+            if self._dir_type == 'git':
+                files = run_stdout(self._conf['git'])
+        except KeyError:
+            files = run_stdout(self._conf['default'])
 
-    for cls in scorers:
-        scorer = globals()[cls]()
-        fm = FuzzyMatch(library=files, scorer=scorer)
+        return files.split()
 
-        pr = cProfile.Profile()
-        pr.enable()
-        for i in range(len(sys.argv[1])):
-            fm.update_scores(sys.argv[1][:i])
-        pr.disable()
-        pr.print_stats()
-        stats = pr.create_stats()
-        print('\n'.join(fm.top_matches()))
-
-
-if __name__ == '__main__':
-    main()
