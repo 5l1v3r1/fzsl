@@ -11,7 +11,7 @@ virtualenv/bin/python:
 virtualenv: requirements.txt virtualenv/bin/python
 	$(ACTIVATE); pip install $$(<requirements.txt)
 
-test:
+test: virtualenv
 	@failed="";
 	@for test in $(TESTS); do \
 		echo "Testing $${test%_*}"; \
