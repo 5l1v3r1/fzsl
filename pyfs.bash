@@ -6,6 +6,6 @@ __pyfs_expand() {
 
 bind '"\C-x\C-E": shell-expand-line'
 bind '"\C-x\C-R": redraw-current-line'
-bind '"\C-t": "\e$a \eddi$(__pyfs_expand)\C-x\C-E\e0Px$a \C-x\C-R\exa"'
+bind '"\C-t": "\e$a \eddi$(__pyfs_expand)\C-x\C-E\e0Pa \exddi\n\epa \C-x\C-R"'
 bind -m vi-command '"\C-t": "i\C-t"'
 
