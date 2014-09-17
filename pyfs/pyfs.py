@@ -78,5 +78,5 @@ class Scanner(object):
         except KeyError:
             files = run_stdout(self._conf['default'])
 
-        return files.split()
+        return [file.strip() for file in files.split()]
 
