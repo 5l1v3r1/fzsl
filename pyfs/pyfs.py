@@ -75,9 +75,9 @@ class Scanner(object):
         try:
             if self._dir_type == 'git':
                 files = run_stdout(self._conf['git'])
+            else:
+                files = run_stdout(self._conf['default'])
         except KeyError:
-            files = run_stdout(self._conf['default'])
-        else:
             files = run_stdout(self._conf['default'])
 
         return [file.strip() for file in files.split()]
