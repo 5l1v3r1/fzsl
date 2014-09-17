@@ -21,6 +21,8 @@ class WeightedDistanceScore(object):
 
     def score(self, path):
         needle_len = len(self._needle)
+        if needle_len <= 0:
+            return (0, path)
 
         mult = path.find(self._needle[-1])
         if mult < 0:
