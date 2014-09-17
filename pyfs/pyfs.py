@@ -77,6 +77,8 @@ class Scanner(object):
                 files = run_stdout(self._conf['git'])
         except KeyError:
             files = run_stdout(self._conf['default'])
+        else:
+            files = run_stdout(self._conf['default'])
 
         return [file.strip() for file in files.split()]
 
