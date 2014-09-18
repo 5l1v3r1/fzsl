@@ -68,37 +68,59 @@ class SimplePager(object):
         scr.refresh()
         files = scanner.scan()
 
-        max_y, _ = scr.getmaxyx()
-
-        scr.clear()
-        for line, match in enumerate(files[:max_y]):
-            scr.addstr(line, 0, match)
-        scr.refresh()
-
-
         fm = pyfs.FuzzyMatch(files=files, scorer=scorer)
+        max_y, _ = scr.getmaxyx()
+        max_y -= 1
 
-        search = ''
-        while True:
-            c = scr.getch()
+        class Closure(object):
+            selection = 0
+        closure = Closure
 
-            if c in (curses.KEY_ENTER, ord('\n')):
-                break
-            elif c in (curses.KEY_DC, curses.KEY_BACKSPACE):
-                if len(search):
-                    search = search[:-1]
-            else:
-                search += chr(c)
+        def draw():
+            scr.erase()
+            m = fm.top_matches(max_y)
+            if closure.selection > len(m):
+                closure.selection = 0
 
-            fm.update_scores(search)
-
-            scr.clear()
-            for line, match in enumerate(fm.top_matches(max_y)):
-                scr.addstr(line, 0, match)
+            for index, match in enumerate(m):
+                if closure.selection == index:
+                    scr.addstr(max_y - index - 1, 0, match, curses.A_UNDERLINE)
+                else:
+                    scr.addstr(max_y - index - 1, 0, match)
             scr.refresh()
 
-        scr.refresh()
-        return fm.top_matches(1)[0]
+
+
+        search = ''
+        draw()
+
+        # Read from stdin instead of using curses.getch  so we can
+        # differentiate between ctrl+j and enter, and similar.
+        while True:
+            c = ord(sys.stdin.read(1))
+
+            if c == 13:
+                # enter
+                break
+            elif c in (66, 10):
+                # down arrow, ctrl+j
+                closure.selection = closure.selection - 1 if closure.selection > 0 else 0
+            elif c in (65, 11):
+                # up arrow, ctrl+k
+                closure.selection = closure.selection + 1 if closure.selection < max_y - 2 else closure.selection
+            else:
+                if c in (126, 127):
+                    # delete, backspace
+                    if len(search):
+                        search = search[:-1]
+                else:
+                    search += chr(c)
+
+                fm.update_scores(search)
+
+            draw()
+
+        return fm.top_matches(max_y)[closure.selection]
 
 
 def main():
