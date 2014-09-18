@@ -22,6 +22,8 @@ def curses_method(func):
         curses.noecho()
         curses.cbreak()
         curses.raw()
+        curses.curs_set(0)
+
 
         scr.keypad(1)
 
