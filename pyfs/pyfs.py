@@ -59,7 +59,6 @@ class FuzzyMatch(object):
 
     def top_matches(self, depth=10):
         ret = sorted(self._matches, key=lambda x: self._matches[x]['score'])[:depth]
-        ret.reverse()
         return ret
 
 class Scanner(object):
