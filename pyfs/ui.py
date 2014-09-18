@@ -1,61 +1,84 @@
 import curses
+import functools
 import os
 import sys
 
 import pyfs
 
-class SimplePager(object):
-    def __init__(self):
-        self._old_stdout = sys.__stdout__
-        self._old_stdout_fd = os.dup(sys.stdout.fileno())
+
+def curses_method(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwds):
+        # Push stdout to stderr so that we still get the curses
+        # output while inside of a pipe or subshell
+        old_stdout = sys.__stdout__
+        old_stdout_fd = os.dup(sys.stdout.fileno())
         os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
 
-        tty = open('/dev/tty')
-        os.dup2(tty.fileno(), 0)
-
-        self._scr = curses.initscr()
+        scr = curses.initscr()
+        curses.start_color()
+        curses.use_default_colors()
 
         curses.noecho()
         curses.cbreak()
         curses.raw()
 
-        self._scr.keypad(1)
+        scr.keypad(1)
+
+        args = list(args)
+        args.insert(1, scr)
+
+        exc = None
+        try:
+            ret = func(*args, **kwds)
+        #pylint: disable=W0703
+        except Exception:
+            exc = sys.exc_info()
+
+        scr.keypad(0)
+        curses.nocbreak()
+        curses.echo()
+        curses.endwin()
+
+        os.dup2(old_stdout_fd, sys.stdout.fileno())
+        sys.stdout = old_stdout
+
+        if exc is not None:
+            raise exc[0], exc[1], exc[2]
+
+        return ret
+    return wrapper
+
+class SimplePager(object):
+    def __init__(self):
+        super(SimplePager, self).__init__()
 
         self._config = {
             'default': 'find ./'
         }
 
-    def cleanup(self):
-        self._scr.keypad(0)
-        curses.nocbreak()
-        curses.echo()
-        curses.endwin()
-
-        os.dup2(self._old_stdout_fd, sys.stdout.fileno())
-        sys.stdout = self._old_stdout
-
-    def run(self):
+    @curses_method
+    def run(self, scr):
         scanner = pyfs.Scanner(self._config)
         scorer = pyfs.WeightedDistanceScore()
 
-        self._scr.addstr("Scanning ...")
-        self._scr.refresh()
+        scr.addstr("Scanning ...")
+        scr.refresh()
         files = scanner.scan()
 
-        max_y, _ = self._scr.getmaxyx()
-        max_y -= 1
+        max_y, _ = scr.getmaxyx()
 
-        self._scr.clear()
+        scr.clear()
         for line, match in enumerate(files[:max_y]):
-            self._scr.addstr(line, 0, match)
-        self._scr.refresh()
+            scr.addstr(line, 0, match)
+        scr.refresh()
 
 
         fm = pyfs.FuzzyMatch(files=files, scorer=scorer)
 
         search = ''
         while True:
-            c = self._scr.getch()
+            c = scr.getch()
 
             if c in (curses.KEY_ENTER, ord('\n')):
                 break
@@ -67,18 +90,18 @@ class SimplePager(object):
 
             fm.update_scores(search)
 
-            self._scr.clear()
+            scr.clear()
             for line, match in enumerate(fm.top_matches(max_y)):
-                self._scr.addstr(line, 0, match)
-            self._scr.refresh()
+                scr.addstr(line, 0, match)
+            scr.refresh()
 
-        self._scr.refresh()
-        self.cleanup()
+        scr.refresh()
         return fm.top_matches(1)[0]
 
 
 def main():
     ui = SimplePager()
+    #pylint: disable=E1120
     result = ui.run()
     sys.stdout.write(result.strip())
 
