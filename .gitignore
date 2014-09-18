@@ -3,3 +3,4 @@ virtualenv/
 *.pyo
 *.swo
 *.swp
+.dev*
