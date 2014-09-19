@@ -58,17 +58,17 @@ class SimplePager(object):
         self._config = {
             'default': 'find ./'
         }
+        self._show_score = False
 
     @curses_method
     def run(self, scr):
         scanner = pyfs.Scanner(self._config)
-        scorer = pyfs.WeightedDistanceScore()
 
         scr.addstr("Scanning ...")
         scr.refresh()
         files = scanner.scan()
 
-        fm = pyfs.FuzzyMatch(files=files, scorer=scorer)
+        fm = pyfs.FuzzyMatch(files=files)
         max_y, _ = scr.getmaxyx()
         max_y -= 1
 
@@ -83,10 +83,17 @@ class SimplePager(object):
                 closure.selection = 0
 
             for index, match in enumerate(m):
-                if closure.selection == index:
-                    scr.addstr(max_y - index - 1, 0, match, curses.A_UNDERLINE)
+                if self._show_score:
+                    line = "%f\t%s" % (fm.score(match), match)
                 else:
-                    scr.addstr(max_y - index - 1, 0, match)
+                    line = match
+
+                if closure.selection == index:
+                    scr.addstr(max_y - index - 1, 0, line, curses.A_UNDERLINE)
+                else:
+                    scr.addstr(max_y - index - 1, 0, line)
+
+            scr.addstr(max_y, 2, "%d/%d >  %s" % (fm.n_matches, fm.n_files, search))
             scr.refresh()
 
 
@@ -108,6 +115,8 @@ class SimplePager(object):
             elif c in (65, 11):
                 # up arrow, ctrl+k
                 closure.selection = closure.selection + 1 if closure.selection < max_y - 2 else closure.selection
+            elif c == 22:
+                self._show_score = not self._show_score
             else:
                 if c in (126, 127):
                     # delete, backspace
