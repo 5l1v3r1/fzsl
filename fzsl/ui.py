@@ -127,7 +127,11 @@ class SimplePager(object):
                 # up arrow, ctrl+k
                 closure.selection = closure.selection + 1 if closure.selection < max_y - 2 else closure.selection
             elif c == 22:
+                # ctrl+v
                 self._show_score = not self._show_score
+            elif c == 27:
+                # escape
+                return ''
             else:
                 if c in (126, 127):
                     # delete, backspace
