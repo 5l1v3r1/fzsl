@@ -7,20 +7,20 @@ import unittest
 TESTDIR = os.path.realpath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.realpath(os.path.join(TESTDIR, '..')))
 
-import pyfs
+import fzsl
 
 class Benchmark(unittest.TestCase):
     def setUp(self):
         config = {
             'default': 'cat %s/files' % (TESTDIR,)
         }
-        self._scanner = pyfs.Scanner(config)
+        self._scanner = fzsl.Scanner(config)
 
     def testeth100e(self):
         files = self._scanner.scan()
 
         for search in ['drineethe100ephy', 'drinete100phy.c', 'e100phy.c']:
-            fm = pyfs.FuzzyMatch(files=files)
+            fm = fzsl.FuzzyMatch(files=files)
             pr = cProfile.Profile()
             for i in range(1, len(search)):
                 pr.enable()
@@ -39,7 +39,7 @@ class Benchmark(unittest.TestCase):
     def test_delete(self):
         files = self._scanner.scan()
 
-        fm = pyfs.FuzzyMatch(files=files)
+        fm = fzsl.FuzzyMatch(files=files)
 
         fm.update_scores("abc")
         matches = fm.n_matches
@@ -54,8 +54,8 @@ class Benchmark(unittest.TestCase):
         fm.update_scores("a")
         fm.update_scores("")
         self.assertEqual(fm.n_matches, fm.n_files)
-        
- 
+
+
 def main():
     unittest.main()
 

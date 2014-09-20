@@ -3,7 +3,7 @@ import functools
 import os
 import sys
 
-import pyfs
+import fzsl
 
 for i, color in enumerate(('white', 'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan')):
     vars()['COL_%s' % (color.upper())] = i
@@ -65,13 +65,13 @@ class SimplePager(object):
 
     @curses_method
     def run(self, scr):
-        scanner = pyfs.Scanner(self._config)
+        scanner = fzsl.Scanner(self._config)
 
         scr.addstr("Scanning ...")
         scr.refresh()
         files = scanner.scan()
 
-        fm = pyfs.FuzzyMatch(files=files)
+        fm = fzsl.FuzzyMatch(files=files)
         max_y, _ = scr.getmaxyx()
         max_y -= 1
 

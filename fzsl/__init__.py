@@ -1,4 +1,4 @@
-from pyfs import (
+from core import (
     FuzzyMatch,
     Scanner,
 )
