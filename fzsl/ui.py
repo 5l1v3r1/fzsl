@@ -88,19 +88,21 @@ class SimplePager(object):
             for index, match in enumerate(m):
                 prefix = ''
                 if self._show_score:
-                    prefix = "%f\t" % (fm.score(match),)
+                    prefix = "%f     " % (fm.score(match),)
+                offset = len(prefix)
+
 
                 start = fm.start(match)
                 end = fm.end(match)
 
                 if closure.selection == index:
                     scr.addstr(max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
-                    scr.addstr(max_y - index - 1, start, match[start:end+1], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
-                    scr.addstr(max_y - index - 1, end, match[end+1:], curses.A_UNDERLINE)
+                    scr.addstr(max_y - index - 1, start+offset, match[start:end+1], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
+                    scr.addstr(max_y - index - 1, end+offset, match[end+1:], curses.A_UNDERLINE)
                 else:
                     scr.addstr(max_y - index - 1, 0, prefix + match[:start])
-                    scr.addstr(max_y - index - 1, start, match[start:end+1], curses.color_pair(COL_BCYAN))
-                    scr.addstr(max_y - index - 1, end, match[end+1:])
+                    scr.addstr(max_y - index - 1, start+offset, match[start:end+1], curses.color_pair(COL_BCYAN))
+                    scr.addstr(max_y - index - 1, end+offset, match[end+1:])
 
             scr.addstr(max_y, 2, "%d/%d >  %s" % (fm.n_matches, fm.n_files, search))
             scr.refresh()
