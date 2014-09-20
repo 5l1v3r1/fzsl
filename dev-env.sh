@@ -12,6 +12,7 @@ cat > ${bashrc} <<-EOF
 	[ -f ~/.bash_profile ] && source ~/.bash_profile
 	source ${topdir}/virtualenv/bin/activate
 	export PYTHONPATH=${topdir}:\${PYTHONPATH}
+	export PATH=${topdir}/bin:\${PATH}
 EOF
 
 /bin/bash --rcfile ${bashrc} -i

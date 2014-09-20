@@ -1,0 +1,40 @@
+#!/usr/bin/env python2
+
+import getopt
+import sys
+
+import fzsl
+
+__usage__ = """
+fzsl [ARGUMENTS]
+
+Fuzzy Shell -  Launch a curses window to preform
+fuzzy matching.
+
+ARGUMENTS:
+    -h, --help      This screen
+"""
+
+def main():
+    try:
+        opts, args = getopt.getopt(
+                sys.argv[1:],
+                'h',
+                ['help',])
+    except getopt.GetoptError as err:
+        print err
+        sys.exit(1)
+
+    for o, a in opts:
+        if o in ('-h', '--help'):
+            print __usage__
+            sys.exit(0)
+
+    ui = fzsl.SimplePager()
+    # pylint: disable=E1120
+    result = ui.run()
+    sys.stdout.write(result.strip())
+
+
+if __name__ == '__main__':
+    main()

@@ -3,3 +3,7 @@ from core import (
     Scanner,
 )
 
+from ui import (
+    SimplePager,
+)
+
