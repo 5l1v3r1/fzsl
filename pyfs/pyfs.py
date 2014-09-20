@@ -1,3 +1,4 @@
+import heapq
 import re
 
 import envoy
@@ -110,8 +111,14 @@ class FuzzyMatch(object):
     def score(self, path):
         return self._library[path].score
 
+    def start(self, path):
+        return self._library[path].start
+
+    def end(self, path):
+        return self._library[path].end
+
     def top_matches(self, depth=10):
-        ret = sorted(self._library, key=lambda x: self._library[x].score, reverse=True)[:depth]
+        ret = heapq.nlargest(depth, self._library, key=lambda x: self._library[x].score)
         return ret
 
 class Scanner(object):

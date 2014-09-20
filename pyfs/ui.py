@@ -5,6 +5,9 @@ import sys
 
 import pyfs
 
+for i, color in enumerate(('white', 'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan')):
+    vars()['COL_%s' % (color.upper())] = i
+    vars()['COL_B%s' % (color.upper())] = i + 8
 
 def curses_method(func):
     @functools.wraps(func)
@@ -18,12 +21,12 @@ def curses_method(func):
         scr = curses.initscr()
         curses.start_color()
         curses.use_default_colors()
+        _ = [curses.init_pair(i + 1, i, -1) for i in range(curses.COLORS)]
 
         curses.noecho()
         curses.cbreak()
         curses.raw()
         curses.curs_set(0)
-
 
         scr.keypad(1)
 
@@ -83,15 +86,21 @@ class SimplePager(object):
                 closure.selection = 0
 
             for index, match in enumerate(m):
+                prefix = ''
                 if self._show_score:
-                    line = "%f\t%s" % (fm.score(match), match)
-                else:
-                    line = match
+                    prefix = "%f\t" % (fm.score(match),)
+
+                start = fm.start(match)
+                end = fm.end(match)
 
                 if closure.selection == index:
-                    scr.addstr(max_y - index - 1, 0, line, curses.A_UNDERLINE)
+                    scr.addstr(max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
+                    scr.addstr(max_y - index - 1, start, match[start:end+1], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
+                    scr.addstr(max_y - index - 1, end, match[end+1:], curses.A_UNDERLINE)
                 else:
-                    scr.addstr(max_y - index - 1, 0, line)
+                    scr.addstr(max_y - index - 1, 0, prefix + match[:start])
+                    scr.addstr(max_y - index - 1, start, match[start:end+1], curses.color_pair(COL_BCYAN))
+                    scr.addstr(max_y - index - 1, end, match[end+1:])
 
             scr.addstr(max_y, 2, "%d/%d >  %s" % (fm.n_matches, fm.n_files, search))
             scr.refresh()
