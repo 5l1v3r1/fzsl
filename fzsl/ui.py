@@ -97,12 +97,12 @@ class SimplePager(object):
 
                 if closure.selection == index:
                     scr.addstr(max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
-                    scr.addstr(max_y - index - 1, start+offset, match[start:end+1], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
-                    scr.addstr(max_y - index - 1, end+offset, match[end+1:], curses.A_UNDERLINE)
+                    scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
+                    scr.addstr(max_y - index - 1, end+offset, match[end:], curses.A_UNDERLINE)
                 else:
                     scr.addstr(max_y - index - 1, 0, prefix + match[:start])
-                    scr.addstr(max_y - index - 1, start+offset, match[start:end+1], curses.color_pair(COL_BCYAN))
-                    scr.addstr(max_y - index - 1, end+offset, match[end+1:])
+                    scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
+                    scr.addstr(max_y - index - 1, end+offset, match[end:])
 
             scr.addstr(max_y, 2, "%d/%d >  %s" % (fm.n_matches, fm.n_files, search))
             scr.refresh()
