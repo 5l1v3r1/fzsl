@@ -5,6 +5,8 @@ TESTS = $(wildcard test/*.py)
 
 .PHONY: test
 
+all: virtualenv
+
 virtualenv/bin/python:
 	$(VIRTUALENV) virtualenv
 
