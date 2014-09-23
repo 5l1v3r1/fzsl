@@ -1,4 +1,4 @@
-VIRTUALENV ?= /usr/bin/virtualenv
+VIRTUALENV ?= /usr/bin/env virtualenv
 
 ACTIVATE = source virtualenv/bin/activate
 TESTS = $(wildcard test/*.py)
