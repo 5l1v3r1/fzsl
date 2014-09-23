@@ -1,5 +1,8 @@
+import functools
 import heapq
+import multiprocessing
 import re
+import signal
 
 import envoy
 
@@ -48,9 +51,9 @@ def default_scorer(path, c_round, regex):
         ranked = [(score(m), m) for m in matches]
         score, best = max(ranked)
 
-        return best.start(1), best.end(1), score, 0
+        return path, (best.start(1), best.end(1), score, 0)
     else:
-        return 0, 0, 0.0, c_round
+        return path, (0, 0, 0.0, c_round)
 
 class FuzzyMatch(object):
     def __init__(self, files=None, scorer=default_scorer):
@@ -61,6 +64,11 @@ class FuzzyMatch(object):
 
         self._scorer = scorer
         self._search = ''
+
+        def pool_init():
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+        self._pool = multiprocessing.Pool(initializer=pool_init)
 
     @property
     def n_matches(self):
@@ -105,10 +113,10 @@ class FuzzyMatch(object):
 
         regex = re.compile('(?=(' + '.*?'.join(re.escape(c) for c in search) + '))')
 
-        scorer = self._scorer
-        _ = [info.update(*scorer(path, s_len, regex))
-                    for path, info in self._library.items()
-                    if info.round_ejected == 0]
+
+        scorer = functools.partial(self._scorer, c_round=s_len, regex=regex)
+        candidates = [path for path, info in self._library.items() if info.round_ejected == 0]
+        _ = [self._library[path].update(*update) for path, update in self._pool.map(scorer, candidates)]
 
     def score(self, path):
         return self._library[path].score
