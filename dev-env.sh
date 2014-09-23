@@ -7,7 +7,8 @@ cleanup() {
 trap cleanup HUP TERM
 
 topdir=$(realpath $(dirname $0))
-bashrc=$(tempfile -d ${topdir} --prefix=.devrc)
+bashrc=$(mktemp --tmpdir=${topdir} .devrc-XXXXXX)
+
 cat > ${bashrc} <<-EOF
 	[ -f ~/.bash_profile ] && source ~/.bash_profile
 	source ${topdir}/virtualenv/bin/activate
