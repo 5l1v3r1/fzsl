@@ -4,3 +4,4 @@ virtualenv/
 *.swo
 *.swp
 .dev*
+build/
