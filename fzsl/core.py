@@ -40,10 +40,15 @@ class MatchInfo(object):
             self.round_ejected = round_ejected
 
 def default_scorer(path, c_round, regex):
-    m = regex.search(path, re.IGNORECASE)
-    if m is not None:
-        r = 1.0 / (m.end() - m.start())
-        return m.start(), m.end(), r, 0
+    matches = [m for m in regex.finditer(path, re.IGNORECASE)]
+    if matches:
+        def score(match):
+            return 1.0 / (len(path) - match.start(1))
+
+        ranked = [(score(m), m) for m in matches]
+        score, best = max(ranked)
+
+        return best.start(1), best.end(1), score, 0
     else:
         return 0, 0, 0.0, c_round
 
@@ -98,10 +103,7 @@ class FuzzyMatch(object):
             _ = [quick_score(path, info) for path, info in self._library.items()]
             return
 
-        ore = search[0]
-        for i in range(1, s_len):
-            ore += '[^%s]*?%s' % (re.escape(search[i-1]), re.escape(search[i]))
-        regex = re.compile(ore)
+        regex = re.compile('(?=(' + '.*?'.join(re.escape(c) for c in search) + '))')
 
         scorer = self._scorer
         _ = [info.update(*scorer(path, s_len, regex))
