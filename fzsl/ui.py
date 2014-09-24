@@ -79,13 +79,18 @@ class SimplePager(object):
             selection = 0
         closure = Closure
 
+        search = ''
+
         def draw():
             scr.erase()
             m = fm.top_matches(max_y)
-            if closure.selection > len(m):
-                closure.selection = 0
+            if closure.selection >= len(m):
+                closure.selection = max(len(m) - 1, 0)
 
             for index, match in enumerate(m):
+                if len(search) > 0 and fm.score(match) == 0:
+                    continue
+
                 prefix = ''
                 if self._show_score:
                     prefix = "%f     " % (fm.score(match),)
@@ -108,8 +113,6 @@ class SimplePager(object):
             scr.refresh()
 
 
-
-        search = ''
         draw()
 
         # Read from stdin instead of using curses.getch  so we can

@@ -128,7 +128,14 @@ class FuzzyMatch(object):
         return self._library[path].end
 
     def top_matches(self, depth=10):
-        ret = heapq.nlargest(depth, self._library, key=lambda x: self._library[x].score)
+        if len(self._search) > 0:
+            valid = [path
+                    for path, info in self._library.items()
+                    if info.score > 0 and info.round_ejected == 0]
+        else:
+            valid = self._library.keys()
+
+        ret = heapq.nlargest(depth, valid, key=lambda x: self._library[x].score)
         return ret
 
 class Scanner(object):
