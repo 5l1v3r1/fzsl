@@ -51,7 +51,6 @@ def ncurses():
 
 class SimplePager(object):
     def __init__(self, scr):
-        super(SimplePager, self).__init__()
         self._scr = scr
 
         self._config = {
