@@ -59,6 +59,7 @@ class SimplePager(object):
         }
         self._show_score = False
         self._fm = fzsl.FuzzyMatch()
+        self._selection = 0
 
     def run(self):
         scanner = fzsl.Scanner(self._config)
@@ -71,17 +72,13 @@ class SimplePager(object):
         max_y, _ = self._scr.getmaxyx()
         max_y -= 1
 
-        class Closure(object):
-            selection = 0
-        closure = Closure
-
         search = ''
 
         def draw():
             self._scr.erase()
             m = self._fm.top_matches(max_y)
-            if closure.selection >= len(m):
-                closure.selection = max(len(m) - 1, 0)
+            if self._selection >= len(m):
+                self._selection = max(len(m) - 1, 0)
 
             for index, match in enumerate(m):
                 if len(search) > 0 and self._fm.score(match) == 0:
@@ -96,7 +93,7 @@ class SimplePager(object):
                 start = self._fm.start(match)
                 end = self._fm.end(match)
 
-                if closure.selection == index:
+                if self._selection == index:
                     self._scr.addstr(max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
                     self._scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
                     self._scr.addstr(max_y - index - 1, end+offset, match[end:], curses.A_UNDERLINE)
@@ -121,10 +118,10 @@ class SimplePager(object):
                 break
             elif c in (66, 10):
                 # down arrow, ctrl+j
-                closure.selection = closure.selection - 1 if closure.selection > 0 else 0
+                self._selection = self._selection - 1 if self._selection > 0 else 0
             elif c in (65, 11):
                 # up arrow, ctrl+k
-                closure.selection = closure.selection + 1 if closure.selection < max_y - 2 else closure.selection
+                self._selection = self._selection + 1 if self._selection < max_y - 2 else self._selection
             elif c == 22:
                 # ctrl+v
                 self._show_score = not self._show_score
@@ -143,7 +140,7 @@ class SimplePager(object):
 
             draw()
 
-        return self._fm.top_matches(max_y)[closure.selection]
+        return self._fm.top_matches(max_y)[self._selection]
 
 
 def main():
