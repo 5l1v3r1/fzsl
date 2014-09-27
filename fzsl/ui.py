@@ -65,6 +65,37 @@ class SimplePager(object):
         max_y, _ = self._scr.getmaxyx()
         self._max_y = max_y - 1
 
+    def _draw(self):
+        self._scr.erase()
+        m = self._fm.top_matches(self._max_y)
+        if self._selection >= len(m):
+            self._selection = max(len(m) - 1, 0)
+
+        for index, match in enumerate(m):
+            if len(self._search) > 0 and self._fm.score(match) == 0:
+                continue
+
+            prefix = ''
+            if self._show_score:
+                prefix = "%f     " % (self._fm.score(match),)
+            offset = len(prefix)
+
+            start = self._fm.start(match)
+            end = self._fm.end(match)
+            line = self._max_y - index - 1
+
+            if self._selection == index:
+                self._scr.addstr(line, 0, prefix + match[:start], curses.A_UNDERLINE)
+                self._scr.addstr(line, start+offset, match[start:end], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
+                self._scr.addstr(line, end+offset, match[end:], curses.A_UNDERLINE)
+            else:
+                self._scr.addstr(line, 0, prefix + match[:start])
+                self._scr.addstr(line, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
+                self._scr.addstr(line, end+offset, match[end:])
+
+        self._scr.addstr(self._max_y, 2, "%d/%d >  %s" % (self._fm.n_matches, self._fm.n_files, self._search))
+        self._scr.refresh()
+
     def run(self):
         scanner = fzsl.Scanner(self._config)
 
@@ -73,40 +104,7 @@ class SimplePager(object):
         files = scanner.scan()
         self._fm.add_files(files)
 
-
-        def draw():
-            self._scr.erase()
-            m = self._fm.top_matches(self._max_y)
-            if self._selection >= len(m):
-                self._selection = max(len(m) - 1, 0)
-
-            for index, match in enumerate(m):
-                if len(self._search) > 0 and self._fm.score(match) == 0:
-                    continue
-
-                prefix = ''
-                if self._show_score:
-                    prefix = "%f     " % (self._fm.score(match),)
-                offset = len(prefix)
-
-
-                start = self._fm.start(match)
-                end = self._fm.end(match)
-
-                if self._selection == index:
-                    self._scr.addstr(self._max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
-                    self._scr.addstr(self._max_y - index - 1, start+offset, match[start:end], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
-                    self._scr.addstr(self._max_y - index - 1, end+offset, match[end:], curses.A_UNDERLINE)
-                else:
-                    self._scr.addstr(self._max_y - index - 1, 0, prefix + match[:start])
-                    self._scr.addstr(self._max_y - index - 1, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
-                    self._scr.addstr(self._max_y - index - 1, end+offset, match[end:])
-
-            self._scr.addstr(self._max_y, 2, "%d/%d >  %s" % (self._fm.n_matches, self._fm.n_files, self._search))
-            self._scr.refresh()
-
-
-        draw()
+        self._draw()
 
         # Read from stdin instead of using curses.getch  so we can
         # differentiate between ctrl+j and enter, and similar.
@@ -138,7 +136,7 @@ class SimplePager(object):
 
                 self._fm.update_scores(self._search)
 
-            draw()
+            self._draw()
 
         return self._fm.top_matches(self._max_y)[self._selection]
 
