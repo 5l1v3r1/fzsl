@@ -78,6 +78,9 @@ class FuzzyMatch(object):
     def n_files(self):
         return len(self._library)
 
+    def add_files(self, files):
+        self._library.update({path:MatchInfo() for path in files})
+
     def update_scores(self, search):
         s_len = len(search)
 
