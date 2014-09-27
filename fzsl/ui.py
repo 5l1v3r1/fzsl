@@ -83,17 +83,16 @@ class SimplePager(object):
             start = self._fm.start(match)
             end = self._fm.end(match)
             line = self._max_y - index - 1
-
+            decor = 0
             if self._selection == index:
-                self._scr.addstr(line, 0, prefix + match[:start], curses.A_UNDERLINE)
-                self._scr.addstr(line, start+offset, match[start:end], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
-                self._scr.addstr(line, end+offset, match[end:], curses.A_UNDERLINE)
-            else:
-                self._scr.addstr(line, 0, prefix + match[:start])
-                self._scr.addstr(line, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
-                self._scr.addstr(line, end+offset, match[end:])
+                decor = curses.A_UNDERLINE
 
-        self._scr.addstr(self._max_y, 2, "%d/%d >  %s" % (self._fm.n_matches, self._fm.n_files, self._search))
+            self._scr.addstr(line, 0, prefix + match[:start], decor)
+            self._scr.addstr(line, start+offset, match[start:end], decor|curses.color_pair(COL_BCYAN))
+            self._scr.addstr(line, end+offset, match[end:], decor)
+
+        self._scr.addstr(self._max_y, 2, "%d/%d >  %s" % (
+            self._fm.n_matches, self._fm.n_files, self._search))
         self._scr.refresh()
 
     def run(self):
