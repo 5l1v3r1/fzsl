@@ -1,5 +1,5 @@
+import contextlib
 import curses
-import functools
 import os
 import sys
 
@@ -9,50 +9,45 @@ for i, color in enumerate(('white', 'black', 'red', 'green', 'yellow', 'blue', '
     vars()['COL_%s' % (color.upper())] = i
     vars()['COL_B%s' % (color.upper())] = i + 8
 
-def curses_method(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwds):
-        # Push stdout to stderr so that we still get the curses
-        # output while inside of a pipe or subshell
-        old_stdout = sys.__stdout__
-        old_stdout_fd = os.dup(sys.stdout.fileno())
-        os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
 
-        scr = curses.initscr()
-        curses.start_color()
-        curses.use_default_colors()
-        _ = [curses.init_pair(i + 1, i, -1) for i in range(curses.COLORS)]
+@contextlib.contextmanager
+def ncurses():
+    # Push stdout to stderr so that we still get the curses
+    # output while inside of a pipe or subshell
+    old_stdout = sys.__stdout__
+    old_stdout_fd = os.dup(sys.stdout.fileno())
+    os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
 
-        curses.noecho()
-        curses.cbreak()
-        curses.raw()
-        curses.curs_set(0)
+    scr = curses.initscr()
+    curses.start_color()
+    curses.use_default_colors()
+    _ = [curses.init_pair(i + 1, i, -1) for i in range(curses.COLORS)]
 
-        scr.keypad(1)
+    curses.noecho()
+    curses.cbreak()
+    curses.raw()
+    curses.curs_set(0)
 
-        args = list(args)
-        args.insert(1, scr)
+    scr.keypad(1)
 
-        exc = None
-        try:
-            ret = func(*args, **kwds)
-        #pylint: disable=W0703
-        except Exception:
-            exc = sys.exc_info()
+    exc = None
+    try:
+        yield scr
+    #pylint: disable=W0703
+    except Exception:
+        exc = sys.exc_info()
 
-        scr.keypad(0)
-        curses.nocbreak()
-        curses.echo()
-        curses.endwin()
+    scr.keypad(0)
+    curses.nocbreak()
+    curses.echo()
+    curses.endwin()
 
-        os.dup2(old_stdout_fd, sys.stdout.fileno())
-        sys.stdout = old_stdout
+    os.dup2(old_stdout_fd, sys.stdout.fileno())
+    sys.stdout = old_stdout
 
-        if exc is not None:
-            raise exc[0], exc[1], exc[2]
+    if exc is not None:
+        raise exc[0], exc[1], exc[2]
 
-        return ret
-    return wrapper
 
 class SimplePager(object):
     def __init__(self):
@@ -63,7 +58,6 @@ class SimplePager(object):
         }
         self._show_score = False
 
-    @curses_method
     def run(self, scr):
         scanner = fzsl.Scanner(self._config)
 
@@ -152,8 +146,8 @@ class SimplePager(object):
 
 def main():
     ui = SimplePager()
-    #pylint: disable=E1120
-    result = ui.run()
+    with ncurses() as scr:
+        result = ui.run(scr)
     sys.stdout.write(result.strip())
 
 if __name__ == '__main__':
