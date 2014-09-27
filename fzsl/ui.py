@@ -50,23 +50,24 @@ def ncurses():
 
 
 class SimplePager(object):
-    def __init__(self):
+    def __init__(self, scr):
         super(SimplePager, self).__init__()
+        self._scr = scr
 
         self._config = {
             'default': 'find ./'
         }
         self._show_score = False
 
-    def run(self, scr):
+    def run(self):
         scanner = fzsl.Scanner(self._config)
 
-        scr.addstr("Scanning ...")
-        scr.refresh()
+        self._scr.addstr("Scanning ...")
+        self._scr.refresh()
         files = scanner.scan()
 
         fm = fzsl.FuzzyMatch(files=files)
-        max_y, _ = scr.getmaxyx()
+        max_y, _ = self._scr.getmaxyx()
         max_y -= 1
 
         class Closure(object):
@@ -76,7 +77,7 @@ class SimplePager(object):
         search = ''
 
         def draw():
-            scr.erase()
+            self._scr.erase()
             m = fm.top_matches(max_y)
             if closure.selection >= len(m):
                 closure.selection = max(len(m) - 1, 0)
@@ -95,16 +96,16 @@ class SimplePager(object):
                 end = fm.end(match)
 
                 if closure.selection == index:
-                    scr.addstr(max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
-                    scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
-                    scr.addstr(max_y - index - 1, end+offset, match[end:], curses.A_UNDERLINE)
+                    self._scr.addstr(max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
+                    self._scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.A_UNDERLINE|curses.color_pair(COL_BCYAN))
+                    self._scr.addstr(max_y - index - 1, end+offset, match[end:], curses.A_UNDERLINE)
                 else:
-                    scr.addstr(max_y - index - 1, 0, prefix + match[:start])
-                    scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
-                    scr.addstr(max_y - index - 1, end+offset, match[end:])
+                    self._scr.addstr(max_y - index - 1, 0, prefix + match[:start])
+                    self._scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
+                    self._scr.addstr(max_y - index - 1, end+offset, match[end:])
 
-            scr.addstr(max_y, 2, "%d/%d >  %s" % (fm.n_matches, fm.n_files, search))
-            scr.refresh()
+            self._scr.addstr(max_y, 2, "%d/%d >  %s" % (fm.n_matches, fm.n_files, search))
+            self._scr.refresh()
 
 
         draw()
@@ -145,9 +146,9 @@ class SimplePager(object):
 
 
 def main():
-    ui = SimplePager()
     with ncurses() as scr:
-        result = ui.run(scr)
+        ui = SimplePager(scr)
+        result = ui.run()
     sys.stdout.write(result.strip())
 
 if __name__ == '__main__':
