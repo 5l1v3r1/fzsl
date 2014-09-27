@@ -58,6 +58,7 @@ class SimplePager(object):
             'default': 'find ./'
         }
         self._show_score = False
+        self._fm = fzsl.FuzzyMatch()
 
     def run(self):
         scanner = fzsl.Scanner(self._config)
@@ -65,8 +66,8 @@ class SimplePager(object):
         self._scr.addstr("Scanning ...")
         self._scr.refresh()
         files = scanner.scan()
+        self._fm.add_files(files)
 
-        fm = fzsl.FuzzyMatch(files=files)
         max_y, _ = self._scr.getmaxyx()
         max_y -= 1
 
@@ -78,22 +79,22 @@ class SimplePager(object):
 
         def draw():
             self._scr.erase()
-            m = fm.top_matches(max_y)
+            m = self._fm.top_matches(max_y)
             if closure.selection >= len(m):
                 closure.selection = max(len(m) - 1, 0)
 
             for index, match in enumerate(m):
-                if len(search) > 0 and fm.score(match) == 0:
+                if len(search) > 0 and self._fm.score(match) == 0:
                     continue
 
                 prefix = ''
                 if self._show_score:
-                    prefix = "%f     " % (fm.score(match),)
+                    prefix = "%f     " % (self._fm.score(match),)
                 offset = len(prefix)
 
 
-                start = fm.start(match)
-                end = fm.end(match)
+                start = self._fm.start(match)
+                end = self._fm.end(match)
 
                 if closure.selection == index:
                     self._scr.addstr(max_y - index - 1, 0, prefix + match[:start], curses.A_UNDERLINE)
@@ -104,7 +105,7 @@ class SimplePager(object):
                     self._scr.addstr(max_y - index - 1, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
                     self._scr.addstr(max_y - index - 1, end+offset, match[end:])
 
-            self._scr.addstr(max_y, 2, "%d/%d >  %s" % (fm.n_matches, fm.n_files, search))
+            self._scr.addstr(max_y, 2, "%d/%d >  %s" % (self._fm.n_matches, self._fm.n_files, search))
             self._scr.refresh()
 
 
@@ -138,11 +139,11 @@ class SimplePager(object):
                 else:
                     search += chr(c)
 
-                fm.update_scores(search)
+                self._fm.update_scores(search)
 
             draw()
 
-        return fm.top_matches(max_y)[closure.selection]
+        return self._fm.top_matches(max_y)[closure.selection]
 
 
 def main():
