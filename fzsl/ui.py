@@ -60,6 +60,7 @@ class SimplePager(object):
         self._show_score = False
         self._fm = fzsl.FuzzyMatch()
         self._selection = 0
+        self._search = ''
 
         max_y, _ = self._scr.getmaxyx()
         self._max_y = max_y - 1
@@ -72,7 +73,6 @@ class SimplePager(object):
         files = scanner.scan()
         self._fm.add_files(files)
 
-        search = ''
 
         def draw():
             self._scr.erase()
@@ -81,7 +81,7 @@ class SimplePager(object):
                 self._selection = max(len(m) - 1, 0)
 
             for index, match in enumerate(m):
-                if len(search) > 0 and self._fm.score(match) == 0:
+                if len(self._search) > 0 and self._fm.score(match) == 0:
                     continue
 
                 prefix = ''
@@ -102,7 +102,7 @@ class SimplePager(object):
                     self._scr.addstr(self._max_y - index - 1, start+offset, match[start:end], curses.color_pair(COL_BCYAN))
                     self._scr.addstr(self._max_y - index - 1, end+offset, match[end:])
 
-            self._scr.addstr(self._max_y, 2, "%d/%d >  %s" % (self._fm.n_matches, self._fm.n_files, search))
+            self._scr.addstr(self._max_y, 2, "%d/%d >  %s" % (self._fm.n_matches, self._fm.n_files, self._search))
             self._scr.refresh()
 
 
@@ -131,12 +131,12 @@ class SimplePager(object):
             else:
                 if c in (126, 127):
                     # delete, backspace
-                    if len(search):
-                        search = search[:-1]
+                    if len(self._search):
+                        self._search = self._search[:-1]
                 else:
-                    search += chr(c)
+                    self._search += chr(c)
 
-                self._fm.update_scores(search)
+                self._fm.update_scores(self._search)
 
             draw()
 
