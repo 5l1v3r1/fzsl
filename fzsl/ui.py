@@ -32,8 +32,8 @@ def ncurses():
     curses.noecho()
     curses.cbreak()
     curses.raw()
-    curses.curs_set(0)
     curses.nonl()
+    curses.curs_set(2)
     scr.keypad(1)
 
     exc = None
@@ -73,6 +73,7 @@ class SimplePager(object):
         self._prompt = curses.newwin(1, x, y-1, 0)
         self._select = curses.newwin(y - 2, x, 0, 0)
         self._max_y = y - 2
+        self._cursor_x = 0
 
     def _draw_select(self):
         self._select.erase()
@@ -103,8 +104,13 @@ class SimplePager(object):
 
     def _draw_prompt(self):
         self._prompt.erase()
-        self._prompt.addstr(0, 2, "%d/%d >  %s" % (
-            self._fm.n_matches, self._fm.n_files, self._search))
+        prompt = "%d/%d >" % (self._fm.n_matches, self._fm.n_files)
+        search_start = 4 + len(prompt)
+
+        self._prompt.addstr(0, 2, prompt)
+        self._prompt.addstr(0, search_start, self._search)
+        y, x = self._prompt.getyx()
+        self._prompt.move(y, search_start + self._cursor_x)
         self._prompt.refresh()
 
     def run(self):
@@ -133,6 +139,14 @@ class SimplePager(object):
                 # up arrow, ctrl+k
                 self._selection = self._selection + 1 if self._selection < self._max_y - 2 else self._selection
                 self._draw_select()
+            elif key in ('KEY_LEFT'):
+                if self._cursor_x > 0:
+                    self._cursor_x -= 1
+                    self._draw_prompt()
+            elif key in ('KEY_RIGHT'):
+                if self._cursor_x < len(self._search):
+                    self._cursor_x += 1
+                    self._draw_prompt()
             elif key in ('^V',):
                 # ctrl+v
                 self._show_score = not self._show_score
@@ -143,12 +157,19 @@ class SimplePager(object):
             else:
                 if key in ('KEY_BACKSPACE',):
                     # delete, backspace
-                    if len(self._search):
-                        self._search = self._search[:-1]
+                    if self._cursor_x > 0:
+                        start = self._search[:self._cursor_x - 1]
+                        end = self._search[self._cursor_x:]
+                        self._search = start + end
+                        self._cursor_x -= 1
                 else:
-                    self._search += chr(c)
+                    start = self._search[:self._cursor_x]
+                    end = self._search[self._cursor_x:]
+                    self._search = start + chr(c) + end
+                    self._cursor_x += 1
 
                 self._fm.update_scores(self._search)
+
                 self._draw_select()
                 self._draw_prompt()
 
