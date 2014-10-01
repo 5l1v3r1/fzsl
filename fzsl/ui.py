@@ -128,12 +128,15 @@ class SimplePager(object):
             elif key  in ('KEY_DOWN', '^J'):
                 # down arrow, ctrl+j
                 self._selection = self._selection - 1 if self._selection > 0 else 0
+                self._draw_select()
             elif key  in ('KEY_UP', '^K'):
                 # up arrow, ctrl+k
                 self._selection = self._selection + 1 if self._selection < self._max_y - 2 else self._selection
+                self._draw_select()
             elif key in ('^V',):
                 # ctrl+v
                 self._show_score = not self._show_score
+                self._draw_select()
             elif key in ('^[',):
                 # escape
                 return ''
@@ -146,9 +149,8 @@ class SimplePager(object):
                     self._search += chr(c)
 
                 self._fm.update_scores(self._search)
-
-            self._draw_select()
-            self._draw_prompt()
+                self._draw_select()
+                self._draw_prompt()
 
         return self._fm.top_matches(self._max_y)[self._selection]
 
