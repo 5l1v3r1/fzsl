@@ -18,6 +18,12 @@ def ncurses():
     old_stdout_fd = os.dup(sys.stdout.fileno())
     os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
 
+    # Reduce the timeout after receiving an escape character, there
+    # doesn't seem to be a way to do this via curses so we have to
+    # set the environment variable before creating the screen.
+    if not 'ESCDELAY' in os.environ:
+        os.environ['ESCDELAY'] =  '25'
+
     scr = curses.initscr()
     curses.start_color()
     curses.use_default_colors()
@@ -27,7 +33,7 @@ def ncurses():
     curses.cbreak()
     curses.raw()
     curses.curs_set(0)
-
+    curses.nonl()
     scr.keypad(1)
 
     exc = None
@@ -38,6 +44,7 @@ def ncurses():
         exc = sys.exc_info()
 
     scr.keypad(0)
+    curses.nl()
     curses.nocbreak()
     curses.echo()
     curses.endwin()
@@ -104,28 +111,27 @@ class SimplePager(object):
 
         self._draw()
 
-        # Read from stdin instead of using curses.getch  so we can
-        # differentiate between ctrl+j and enter, and similar.
         while True:
-            c = ord(sys.stdin.read(1))
+            c = self._scr.getch()
+            key = curses.keyname(c)
 
-            if c == 13:
+            if key in ('^M'):
                 # enter
                 break
-            elif c in (66, 10):
+            elif key  in ('KEY_DOWN', '^J'):
                 # down arrow, ctrl+j
                 self._selection = self._selection - 1 if self._selection > 0 else 0
-            elif c in (65, 11):
+            elif key  in ('KEY_UP', '^K'):
                 # up arrow, ctrl+k
                 self._selection = self._selection + 1 if self._selection < self._max_y - 2 else self._selection
-            elif c == 22:
+            elif key in ('^V',):
                 # ctrl+v
                 self._show_score = not self._show_score
-            elif c == 27:
+            elif key in ('^[',):
                 # escape
                 return ''
             else:
-                if c in (126, 127):
+                if key in ('KEY_BACKSPACE',):
                     # delete, backspace
                     if len(self._search):
                         self._search = self._search[:-1]
