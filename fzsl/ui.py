@@ -68,11 +68,14 @@ class SimplePager(object):
         self._selection = 0
         self._search = ''
 
-        max_y, _ = self._scr.getmaxyx()
-        self._max_y = max_y - 1
+        y, x = self._scr.getmaxyx()
 
-    def _draw(self):
-        self._scr.erase()
+        self._prompt = curses.newwin(1, x, y-1, 0)
+        self._select = curses.newwin(y - 2, x, 0, 0)
+        self._max_y = y - 2
+
+    def _draw_select(self):
+        self._select.erase()
         m = self._fm.top_matches(self._max_y)
         if self._selection >= len(m):
             self._selection = max(len(m) - 1, 0)
@@ -93,13 +96,16 @@ class SimplePager(object):
             if self._selection == index:
                 decor = curses.A_UNDERLINE
 
-            self._scr.addstr(line, 0, prefix + match[:start], decor)
-            self._scr.addstr(line, start+offset, match[start:end], decor|curses.color_pair(COL_BCYAN))
-            self._scr.addstr(line, end+offset, match[end:], decor)
+            self._select.addstr(line, 0, prefix + match[:start], decor)
+            self._select.addstr(line, start+offset, match[start:end], decor|curses.color_pair(COL_BCYAN))
+            self._select.addstr(line, end+offset, match[end:], decor)
+        self._select.refresh()
 
-        self._scr.addstr(self._max_y, 2, "%d/%d >  %s" % (
+    def _draw_prompt(self):
+        self._prompt.erase()
+        self._prompt.addstr(0, 2, "%d/%d >  %s" % (
             self._fm.n_matches, self._fm.n_files, self._search))
-        self._scr.refresh()
+        self._prompt.refresh()
 
     def run(self):
         scanner = fzsl.Scanner(self._config)
@@ -109,7 +115,8 @@ class SimplePager(object):
         files = scanner.scan()
         self._fm.add_files(files)
 
-        self._draw()
+        self._draw_select()
+        self._draw_prompt()
 
         while True:
             c = self._scr.getch()
@@ -140,7 +147,8 @@ class SimplePager(object):
 
                 self._fm.update_scores(self._search)
 
-            self._draw()
+            self._draw_select()
+            self._draw_prompt()
 
         return self._fm.top_matches(self._max_y)[self._selection]
 
