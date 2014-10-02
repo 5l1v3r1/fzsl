@@ -29,6 +29,6 @@ test: virtualenv
 		echo "All tests passed."; \
 	fi
 
-
-
-
+clean:
+	rm -rf virtualenv
+	rm -rf build
