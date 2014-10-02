@@ -12,7 +12,7 @@ distutils.core.setup(
         packages=['fzsl'],
         scripts=['bin/fzsl'],
         data_files=[
-            ('/etc/fzsl', ['fzsl.bash']),
+            ('/etc/fzsl', ['fzsl.bash', 'etc/fzsl.conf']),
         ],
         license='BSD',
         classifiers=[

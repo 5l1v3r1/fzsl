@@ -1,7 +1,13 @@
 #!/usr/bin/env python2
 
 import getopt
+import os
 import sys
+
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
 
 import fzsl
 
@@ -12,26 +18,69 @@ Fuzzy Shell -  Launch a curses window to preform
 fuzzy matching.
 
 ARGUMENTS:
-    -h, --help      This screen
+    -h, --help              This screen
+    -c, --config [FILE]     Configuration file
+
+CONFIGURATION FILE:
+    fzsl will use ~/.config/fzsl if it exists, otherwise
+    /etc/fzsl/fzsl.conf will be used.
 """
+
+def read_config(path=None):
+    parser = configparser.RawConfigParser(allow_no_value=True)
+
+    if path is None:
+        path = os.path.expanduser('~/.config/fzsl')
+        if not os.path.exists(path):
+            path = '/etc/fzsl/fzsl.conf'
+
+    parser.read(path)
+    return parser
+
+def build_scanners(parser):
+    scanners = []
+    for section in parser.sections():
+        if section == 'fzsl':
+            continue
+        scanners.append(fzsl.Scanner.from_configparser(section, parser))
+
+    scanners.sort()
+    scanners.reverse()
+    return scanners
+
+def pick_scanner(scanners):
+    cwd = os.getcwd()
+    avail = [scanner for scanner in scanners if scanner.is_suitable(cwd)]
+    if len(avail) == 0:
+        return fzsl.Scanner('find .')
+    else:
+        return avail[0]
 
 def main():
     try:
         opts, args = getopt.getopt(
                 sys.argv[1:],
-                'h',
-                ['help',])
+                'c:h',
+                ['config=', 'help',])
     except getopt.GetoptError as err:
         print err
         sys.exit(1)
 
+    config = None
+
     for o, a in opts:
-        if o in ('-h', '--help'):
+        if o in ('-c', '--config'):
+            config = a
+        elif o in ('-h', '--help'):
             print __usage__
             sys.exit(0)
 
+    parser = read_config(config)
+    scanners = build_scanners(parser)
+    scanner = pick_scanner(scanners)
+
     with fzsl.ncurses() as scr:
-        ui = fzsl.SimplePager(scr)
+        ui = fzsl.SimplePager(scr, scanner)
         result = ui.run()
     sys.stdout.write(result.strip())
 

@@ -57,8 +57,9 @@ def ncurses():
 
 
 class SimplePager(object):
-    def __init__(self, scr):
+    def __init__(self, scr, scanner):
         self._scr = scr
+        self._scanner = scanner
 
         self._show_score = False
         self._fm = fzsl.FuzzyMatch()
@@ -111,11 +112,9 @@ class SimplePager(object):
         self._prompt.refresh()
 
     def run(self):
-        scanner = fzsl.Scanner('find .')
-
         self._scr.addstr("Scanning ...")
         self._scr.refresh()
-        files = scanner.scan()
+        files = self._scanner.scan()
         self._fm.add_files(files)
 
         self._draw_select()
