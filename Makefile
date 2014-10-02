@@ -1,6 +1,8 @@
+SHELL = /bin/bash
 VIRTUALENV ?= /usr/bin/env virtualenv
 
 ACTIVATE = source virtualenv/bin/activate
+REQUIREMENTS = $(shell cat requirements.txt)
 TESTS = $(wildcard test/*.py)
 
 .PHONY: test
@@ -11,7 +13,7 @@ virtualenv/bin/python:
 	$(VIRTUALENV) virtualenv
 
 virtualenv: requirements.txt virtualenv/bin/python
-	$(ACTIVATE); pip install $$(<requirements.txt)
+	$(ACTIVATE); pip install $(REQUIREMENTS)
 
 test: virtualenv
 	@failed="";
