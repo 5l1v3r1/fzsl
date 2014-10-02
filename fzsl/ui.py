@@ -172,12 +172,3 @@ class SimplePager(object):
 
         return self._fm.top_matches(self._max_y)[self._selection]
 
-
-def main():
-    with ncurses() as scr:
-        ui = SimplePager(scr)
-        result = ui.run()
-    sys.stdout.write(result.strip())
-
-if __name__ == '__main__':
-    main()

@@ -3,6 +3,7 @@ from core import (
 )
 
 from ui import (
+    ncurses,
     SimplePager,
 )
 

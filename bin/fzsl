@@ -30,11 +30,10 @@ def main():
             print __usage__
             sys.exit(0)
 
-    ui = fzsl.SimplePager()
-    # pylint: disable=E1120
-    result = ui.run()
+    with fzsl.ncurses() as scr:
+        ui = fzsl.SimplePager(scr)
+        result = ui.run()
     sys.stdout.write(result.strip())
-
 
 if __name__ == '__main__':
     main()
