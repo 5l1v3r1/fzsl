@@ -1,9 +1,12 @@
 from core import (
     FuzzyMatch,
-    Scanner,
 )
 
 from ui import (
     SimplePager,
 )
 
+from scanner import (
+    Scanner,
+    SubprocessError,
+)

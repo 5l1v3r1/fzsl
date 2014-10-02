@@ -11,13 +11,12 @@ import fzsl
 
 class Benchmark(unittest.TestCase):
     def setUp(self):
-        config = {
-            'default': 'cat %s/files' % (TESTDIR,)
-        }
-        self._scanner = fzsl.Scanner(config)
+        self._scanner = fzsl.Scanner(
+                cmd='cat %s/files' % (TESTDIR,),
+                priority=1)
 
     def testeth100e(self):
-        files = self._scanner.scan()
+        files = self._scanner.scan(TESTDIR)
 
         for search in ['drineethe100ephy', 'drinete100phy.c', 'e100phy.c']:
             fm = fzsl.FuzzyMatch(files=files)
@@ -37,7 +36,7 @@ class Benchmark(unittest.TestCase):
                     fm.top_matches())
 
     def test_delete(self):
-        files = self._scanner.scan()
+        files = self._scanner.scan(TESTDIR)
 
         fm = fzsl.FuzzyMatch(files=files)
 

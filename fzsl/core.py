@@ -4,18 +4,6 @@ import multiprocessing
 import re
 import signal
 
-import envoy
-
-def run_stdout(cmd, env=None):
-    child = envoy.run(cmd, env=env)
-    if child.status_code != 0:
-        raise SubprocessError(cmd)
-    return child.std_out
-
-class SubprocessError(Exception):
-    def __init__(self, cmd):
-        super(SubprocessError, self).__init__('Failed to run: "%s"' % (cmd,))
-
 class MatchInfo(object):
     def __init__(self, start=0, end=0, score=0, round_ejected=0):
         """
@@ -141,23 +129,4 @@ class FuzzyMatch(object):
         ret = heapq.nlargest(depth, valid, key=lambda x: self._library[x].score)
         return ret
 
-class Scanner(object):
-    def __init__(self, scanner_conf):
-        self._dir_type = None
-        self._conf = scanner_conf
-
-        c = envoy.run('git rev-parse')
-        if c.status_code == 0:
-            self._dir_type = 'git'
-
-    def scan(self):
-        try:
-            if self._dir_type == 'git':
-                files = run_stdout(self._conf['git'])
-            else:
-                files = run_stdout(self._conf['default'])
-        except KeyError:
-            files = run_stdout(self._conf['default'])
-
-        return [f.strip() for f in files.split()]
 

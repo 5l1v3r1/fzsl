@@ -60,9 +60,6 @@ class SimplePager(object):
     def __init__(self, scr):
         self._scr = scr
 
-        self._config = {
-            'default': 'find ./'
-        }
         self._show_score = False
         self._fm = fzsl.FuzzyMatch()
         self._selection = 0
@@ -114,7 +111,7 @@ class SimplePager(object):
         self._prompt.refresh()
 
     def run(self):
-        scanner = fzsl.Scanner(self._config)
+        scanner = fzsl.Scanner('find .')
 
         self._scr.addstr("Scanning ...")
         self._scr.refresh()
