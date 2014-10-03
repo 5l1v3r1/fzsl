@@ -1,12 +1,12 @@
 import functools
 import os
+import subprocess 
 
-import envoy
 
 class SubprocessError(Exception):
-    def __init__(self, cmd, cwd):
+    def __init__(self, cmd, cwd, error):
         super(SubprocessError, self).__init__(
-                'Failed to run: "%s" in %s' % (cmd, cwd))
+                'Failed to run: "%s" in %s: %s' % (cmd, cwd, error))
 
 
 @functools.total_ordering
@@ -77,7 +77,7 @@ class Scanner(object):
         """
         kwds = {}
         if parser.has_option(section, 'detect_cmd'):
-            kwds['detect_cmd'] = parser.get(section, 'detect_cmd')
+            kwds['detect_cmd'] = parser.get(section, 'detect_cmd').replace('\n', ' ')
 
         if parser.has_option(section, 'root_path'):
             kwds['root_path'] = parser.get(section, 'root_path')
@@ -88,7 +88,9 @@ class Scanner(object):
         if parser.has_option(section, 'cache'):
             kwds['cache'] = parser.get(section, 'cache')
 
-        return cls(parser.get(section, 'cmd'), **kwds)
+        cmd = parser.get(section, 'cmd').replace('\n', ' ')
+
+        return cls(cmd, **kwds)
 
     def is_suitable(self, path):
         """
@@ -108,10 +110,18 @@ class Scanner(object):
 
         if self._detect_cmd is not None:
             try:
-                c = envoy.run(self._detect_cmd, cwd=path)
+                stderr = ''
+                c = subprocess.Popen(
+                        self._detect_cmd,
+                        cwd=path,
+                        shell=True,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE)
+                _, stderr = c.communicate()
             except:
-                raise SubprocessError(self._detect_cmd, path)
-            if c.status_code == 0:
+                raise SubprocessError(self._detect_cmd, path, stderr)
+
+            if c.returncode == 0:
                 return True
 
         if self._root_path is None and self._detect_cmd is None:
@@ -147,10 +157,23 @@ class Scanner(object):
                 path = os.getcwd()
 
             cwd = path if self._root_path is None else self._root_path
-            c = envoy.run(self._cmd, cwd=cwd)
-            if c.status_code != 0:
-                raise SubprocessError(self._cmd, cwd)
-            ret = [f.strip() for f in c.std_out.split()]
+
+            try:
+                stdout = stderr = ''
+                c = subprocess.Popen(
+                        self._cmd,
+                        cwd=cwd,
+                        shell=True,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE)
+                stdout, stderr = c.communicate()
+            except:
+                raise SubprocessError(self._cmd, cwd, stderr)
+
+            if c.returncode != 0:
+                raise SubprocessError(self._cmd, cwd, stderr)
+
+            ret = [f.strip() for f in stdout.split()]
 
             if self._cache is not None:
                 with open(self._cache, 'w') as fp:

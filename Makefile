@@ -13,7 +13,9 @@ virtualenv/bin/python:
 	$(VIRTUALENV) virtualenv
 
 virtualenv: requirements.txt virtualenv/bin/python
-	$(ACTIVATE); pip install $(REQUIREMENTS)
+	@if [ -n "$(REQUIREMENTS)" ]; then \
+		$(ACTIVATE); pip install $(REQUIREMENTS); \
+	fi
 
 test: virtualenv
 	@failed="";
