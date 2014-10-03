@@ -175,5 +175,8 @@ class SimplePager(object):
                 self._draw_select()
                 self._draw_prompt()
 
-        return self._fm.top_matches(self._max_y)[self._selection]
+        try:
+            return self._fm.top_matches(self._max_y)[self._selection]
+        except IndexError:
+            return ''
 
