@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 import unittest
 
 TESTDIR = os.path.realpath(os.path.dirname(__file__))
@@ -49,6 +50,23 @@ class ScannerTest(unittest.TestCase):
     def test_fallthrough(self):
         s = fzsl.Scanner('echo')
         self.assertTrue(s.is_suitable(TESTDIR))
+
+    def test_scanner(self):
+        cache = tempfile.NamedTemporaryFile(dir=TESTDIR)
+
+        with open(os.path.join(TESTDIR, 'files'), 'r') as src:
+            cache.write('\n'.join(src.read().split()))
+        cache.flush()
+
+        s = fzsl.Scanner('echo hi', cache=cache.name)
+        results = s.scan()
+        self.assertEqual(len(results), 49168)
+
+        results = s.scan(rescan=True)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0], 'hi')
+
+        
 
 def main():
     unittest.main()
