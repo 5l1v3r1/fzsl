@@ -21,6 +21,14 @@ class MatchInfo(object):
         self.round_ejected = round_ejected
 
     def update(self, start=None, end=None, score=None, round_ejected=None):
+        """
+        Update the MatchInfo attributes
+
+        @param start         - index in path where match starts
+        @param end           - index in path where match ends
+        @param score         - match score
+        @param round_ejected - the round (length of search string) that this path
+        """
         if start is not None:
             self.start = start
         if end is not None:
@@ -31,6 +39,27 @@ class MatchInfo(object):
             self.round_ejected = round_ejected
 
 def default_scorer(path, c_round, regex):
+    """
+    Score how well a path is matched by the given regex.  Note
+    that this function will be passed to a multiprocessing pool
+    and needs to return enough context such that the results can
+    be correctly collated back at the source.
+
+    @param path     - path to score
+    @param c_round  - length of the current search query.  This is
+                      used to support deletion of characters in the
+                      query.  If a character is deleted, then all
+                      results that were ejected in the previous round
+                      will be re-evaluated
+    @param regex    - regular expression to use for matching
+    @return         - This is a little complex in order to support
+                      multiprocessing.  The return is a tuple where
+                      the first item is the path that was passed into
+                      this function.  The second item is another tuple
+                      consisting of MatchInfo attributes: start, end,
+                      score, round_ejected.  That is:
+                      (path, (start, end, score, round_ejected))
+    """
     matches = [m for m in regex.finditer(path, re.IGNORECASE)]
     if matches:
         def score(match):
@@ -45,6 +74,16 @@ def default_scorer(path, c_round, regex):
 
 class FuzzyMatch(object):
     def __init__(self, files=None, scorer=default_scorer):
+        """
+        Create a FuzzyMatcher which is responsible for handling the
+        state as paths are added to the library being searched by an
+        updating query.
+
+        @param files    - initial library of paths to rank
+        @param scorer   - scoring function.  This function must match
+                          the signature and return values of the
+                          default_scorer.  See it for more information.
+        """
         if files is not None:
             self._library = {path:MatchInfo() for path in files}
         else:
@@ -60,24 +99,46 @@ class FuzzyMatch(object):
 
     @property
     def n_matches(self):
+        """
+        Number of paths which are candidates given the current query
+        """
         return len([info for info in self._library.values() if info.round_ejected == 0])
 
     @property
     def n_files(self):
+        """
+        Total number of paths in the library being searched
+        """
         return len(self._library)
 
     def add_files(self, files):
+        """
+        Add files to the library being searched.  This does not automatically
+        score the new files.  Use update_scores() to do so if necessary.
+
+        @param files    - list of files to add.
+        """
         self._library.update({path:MatchInfo() for path in files})
 
     def reset_files(self, files):
         """
-        Reset the library of possible files to match.
+        Reset the library of possible files to match.  This does not
+        automatically score the new files.  Use update_scores() to do
+        so if necessary.
 
         @param files    - new files to use as a library
         """
         self._library = {path:MatchInfo() for path in files}
 
     def update_scores(self, search):
+        """
+        Update the scores for every path in the library that was not
+        previously ejected.  If the search term is smaller than the
+        previous one, paths that were ejected in the last round will
+        be re-scored and possibly retained.
+
+        @param search   - query to fuzzy match against the library
+        """
         s_len = len(search)
 
         if s_len < len(self._search):
@@ -118,15 +179,36 @@ class FuzzyMatch(object):
         _ = [self._library[path].update(*update) for path, update in self._pool.map(scorer, candidates)]
 
     def score(self, path):
+        """
+        @param path - path to lookup
+        @return     - score of the given path
+        """
         return self._library[path].score
 
     def start(self, path):
+        """
+        @param path - path to lookup
+        @return     - index of the start of the match of the current query in the path
+        """
         return self._library[path].start
 
     def end(self, path):
+        """
+        @param path - path to lookup
+        @return     - index of the end of the match of the current query in the path
+        """
         return self._library[path].end
 
     def top_matches(self, depth=10):
+        """
+        Get the best matching paths in the library.  Note that only paths
+        which have not been ejected and have a positive score will be returned.
+        Therefore, the length of the returned list may be less than the
+        specified depth.
+
+        @param depth    - maximum number of paths to return
+        @return         - sorted list of the top scoring paths in the library
+        """
         if len(self._search) > 0:
             valid = [path
                     for path, info in self._library.items()
@@ -136,5 +218,4 @@ class FuzzyMatch(object):
 
         ret = heapq.nlargest(depth, valid, key=lambda x: self._library[x].score)
         return ret
-
 

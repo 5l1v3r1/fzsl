@@ -12,6 +12,20 @@ for i, color in enumerate(('white', 'black', 'red', 'green', 'yellow', 'blue', '
 
 @contextlib.contextmanager
 def ncurses():
+    """
+    Context manager for curses applications.  This does a number of
+    things beyond what curses.wrapper() does.
+
+    - Redirect stdout to stderr.  This is done so that we can still
+      use the ncurses interface from within a pipe or subshell.
+    - Drop the escape delay down to 25ms, similar to vim.
+    - Remove newline mode.
+
+    An ncurses screen is returned by the manager.  If any exceptions
+    occur, all of the setup performed by the manager is undone before
+    raising the original exception.  This should guarantee that any
+    bugs in the code will not leave the user with a messed up shell.
+    """
     # Push stdout to stderr so that we still get the curses
     # output while inside of a pipe or subshell
     old_stdout = sys.__stdout__
@@ -58,6 +72,15 @@ def ncurses():
 
 class SimplePager(object):
     def __init__(self, scr, scanner):
+        """
+        Create a simple pager for showing scan results.  As new terms
+        are entered, the results will be updated with the best matches
+        showing a highlight over the part of the string which matched.
+
+        @param scr      - ncurses screen to use
+        @param scanner  - fzsl.Scanner object that will be used to
+                          generate the list of possible matches
+        """
         self._scr = scr
         self._scanner = scanner
 
@@ -74,6 +97,10 @@ class SimplePager(object):
         self._cursor_x = 0
 
     def _draw_select(self):
+        """
+        Redraw the selection window which contains all of the
+        possible matches to the current search.
+        """
         self._select.erase()
         m = self._fm.top_matches(self._max_y)
         if self._selection >= len(m):
@@ -101,6 +128,9 @@ class SimplePager(object):
         self._select.refresh()
 
     def _draw_prompt(self):
+        """
+        Redraw the prompt window.
+        """
         self._prompt.erase()
         prompt = "%d/%d >" % (self._fm.n_matches, self._fm.n_files)
         search_start = 4 + len(prompt)
@@ -112,6 +142,9 @@ class SimplePager(object):
         self._prompt.refresh()
 
     def run(self):
+        """
+        Start the pager.
+        """
         self._scr.addstr("Scanning ...")
         self._scr.refresh()
         files = self._scanner.scan()
