@@ -158,6 +158,12 @@ class SimplePager(object):
                         end = self._search[self._cursor_x:]
                         self._search = start + end
                         self._cursor_x -= 1
+                elif key in ('^R', 'KEY_F(5)'):
+                    self._scr.erase()
+                    self._scr.addstr('Scanning ...')
+                    self._scr.refresh()
+                    files = self._scanner.scan(rescan=True)
+                    self._fm.reset_files(files)
                 else:
                     start = self._search[:self._cursor_x]
                     end = self._search[self._cursor_x:]

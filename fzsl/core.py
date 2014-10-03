@@ -69,6 +69,14 @@ class FuzzyMatch(object):
     def add_files(self, files):
         self._library.update({path:MatchInfo() for path in files})
 
+    def reset_files(self, files):
+        """
+        Reset the library of possible files to match.
+
+        @param files    - new files to use as a library
+        """
+        self._library = {path:MatchInfo() for path in files}
+
     def update_scores(self, search):
         s_len = len(search)
 
