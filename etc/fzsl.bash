@@ -19,5 +19,18 @@ __fzsl_bind_default_matching() {
     fi
 }
 
+# Setup an alias for fuzzy cd.  Running 'fzcd' will launch the
+# ui with only directories as options and cd to the selected
+# path on completion
+#
+# Parameters:
+#   $1  - Rule to use for fuzzy directory matching.  Defaults to dirs-only
+__fzsl_create_fzcd() {
+    local rule=${1:-dirs-only}
 
+    fzcd() {
+        local dir=$(fzsl -c ~/scm/fzsl/etc/fzsl.conf --rule dirs-only)
+        [ -n "${dir}" ] && cd ${dir}
+    }
+}
 
