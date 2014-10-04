@@ -4,6 +4,7 @@ VIRTUALENV ?= /usr/bin/env virtualenv
 ACTIVATE = source virtualenv/bin/activate
 REQUIREMENTS = $(shell cat requirements.txt)
 TESTS = $(wildcard test/*.py)
+VERSION = $(shell python setup.py --version)
 
 .PHONY: test
 
@@ -32,6 +33,12 @@ test: virtualenv
 	else \
 		echo "All tests passed."; \
 	fi
+
+dist/fzsl-$(VERSION).tar.gz: virtualenv
+	python setup.py sdist
+
+dev-install: dist/fzsl-$(VERSION).tar.gz
+	$(ACTIVATE); pip install --no-index dist/fzsl-$(VERSION).tar.gz
 
 clean:
 	rm -rf virtualenv

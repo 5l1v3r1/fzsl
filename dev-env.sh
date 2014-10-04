@@ -9,11 +9,14 @@ trap cleanup HUP TERM
 topdir=$(realpath $(dirname $0))
 bashrc=$(mktemp --tmpdir=${topdir} .devrc-XXXXXX)
 
+make dev-install
+
 cat > ${bashrc} <<-EOF
 	[ -f ~/.bash_profile ] && source ~/.bash_profile
 	source ${topdir}/virtualenv/bin/activate
-	export PYTHONPATH=${topdir}:\${PYTHONPATH}
-	export PATH=${topdir}/bin:\${PATH}
+	source ${topdir}/virtualenv/etc/fzsl/fzsl.bash
+	__fzsl_bind_default_matching
+	__fzsl_create_fzcd
 EOF
 
 /bin/bash --rcfile ${bashrc} -i
