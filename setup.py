@@ -1,20 +1,28 @@
 #!/usr/bin/env python
+import os
+import setuptools
+import sys
 
-import distutils.core
+def read(*paths):
+    """Build a file path from *paths* and return the contents."""
+    with open(os.path.join(*paths), 'r') as f:
+        return f.read()
 
-distutils.core.setup(
+setuptools.setup(
         name='fzsl',
         version='1.0',
         description='Fuzzy path searching for shells',
+        long_description=(read('README.txt')),
         author='Justin Bronder',
         author_email='jsbronder@gmail.com',
         url='http://github.com/jsbronder/fzsl',
+        include_package_data=True,
+        keywords='fuzzy shell search',
         packages=['fzsl'],
-        scripts=['bin/fzsl'],
         data_files=[
-            ('/etc/fzsl', ['etc/fzsl.bash', 'etc/fzsl.conf']),
+            ('%s/etc/fzsl' % (sys.prefix,), ['etc/fzsl.bash', 'etc/fzsl.conf']),
         ],
-        license='BSD',
+        scripts=['bin/fzsl'],
         classifiers=[
             'Development Status :: 3 - Alpha',
             'Environment :: Console',

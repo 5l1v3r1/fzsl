@@ -5,3 +5,5 @@ virtualenv/
 *.swp
 .dev*
 build/
+fzsl.egg-info/
+dist/
