@@ -23,17 +23,17 @@ ARGUMENTS:
     -r, --rule [RULE]       Rule to use for scanning
 
 CONFIGURATION FILE:
-    fzsl will use ~/.config/fzsl if it exists, otherwise
-    /etc/fzsl/fzsl.conf will be used.
-"""
+    fzsl will use ~/.config/fzslrc if it exists, otherwise
+    %s/etc/fzsl/fzsl.conf will be used.
+""" % (sys.prefix,)
 
 def read_config(path=None):
     parser = configparser.RawConfigParser(allow_no_value=True)
 
     if path is None:
-        path = os.path.expanduser('~/.config/fzsl')
+        path = os.path.expanduser('~/.config/fzslrc')
         if not os.path.exists(path):
-            path = '/etc/fzsl/fzsl.conf'
+            path = '%s/etc/fzsl/fzsl.conf' % (sys.prefix,)
 
     parser.read(path)
     return parser
