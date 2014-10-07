@@ -9,5 +9,6 @@ from ui import (
 
 from scanner import (
     Scanner,
+    SimpleScanner,
     SubprocessError,
 )

@@ -1,6 +1,7 @@
+import abc
 import functools
 import os
-import subprocess 
+import subprocess
 
 
 class SubprocessError(Exception):
@@ -8,14 +9,71 @@ class SubprocessError(Exception):
         super(SubprocessError, self).__init__(
                 'Failed to run: "%s" in %s: %s' % (cmd, cwd, error))
 
-
 @functools.total_ordering
 class Scanner(object):
-    def __init__(self, cmd, detect_cmd=None, root_path=None, priority=0, cache=None):
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, name, priority=0):
+        """
+        @param name         - name of the Scanner.
+        @param priority     - Priority for this scanner.  Scanners with a
+                              higher priority will be favored for any given
+                              path.  If the priority is less than 0, the
+                              scanner will be ignored by any automatic
+                              scanner picking
+        """
+        self._name = name
+        self._priority = priority
+
+
+    def __eq__(self, other):
+        return (self._name == other._name
+                and self._priority == other._priority)
+
+    def __lt__(self, other):
+        return self._priority < other._priority
+
+    @abc.abstractmethod
+    def is_suitable(self, path):
+        """
+        Check if this scanner is suitable to run on the given path.
+
+        @param path - path to check
+        @return     - True if this scanner is suitable to scan in
+                      the specified path
+        """
+        pass
+
+    @abc.abstractmethod
+    def scan(self, path=None, rescan=False):
+        """
+        Scan for files at the given path.  This assumes that the
+        scanner is suitable for scanning (self.is_suitable()).
+        If the Scanner is using a cache, then the cache should be
+        invalidated and the file list regenerated when rescan is
+        True.
+
+        @param path     - path at which to start scanning, if undefined
+                          then the current working directory is used
+        @param rescan   - force a full rescan of files instead of using
+                          a cached list
+        @return         - list of detected files
+        """
+        pass
+
+
+class SimpleScanner(Scanner):
+    def __init__(self, name, cmd, priority=0, detect_cmd=None, root_path=None, cache=None):
         """
         Create a scanner.
 
-        @param cmd  - shell command used to scan for files
+        @param name         - name of the Scanner.
+        @param cmd          - shell command used to scan for files
+        @param priority     - Priority for this scanner.  Scanners with a
+                              higher priority will be favored for any given
+                              path.  If the priority is less than 0, the
+                              scanner will be ignored by any automatic
+                              scanner picking
         @param detect_cmd   - If specified, this command will be used to
                               check if this scanner can be used for a
                               given path.  If the command returns 0, the
@@ -26,21 +84,16 @@ class Scanner(object):
                               of this scanner.  Secondly, when scanning, the
                               current working directory will be set to this
                               path
-        @param priority     - Priority for this scanner.  Scanners with a
-                              higher priority will be favored for any given
-                              path.  If the priority is less than 0, the
-                              scanner will be ignored by any automatic
-                              scanner picking
         @param cache        - If specified, path where this scanner will store
                               a cache of files it scans.  By default, calls
                               to scan will just return the files in the cache.
                               This can be changed by passing rescan=True to
                               scan().
         """
+        super(SimpleScanner, self).__init__(name, priority)
         self._cmd = cmd
         self._detect_cmd = detect_cmd
         self._root_path = None
-        self._priority = priority
         self._cache = None
 
         if root_path is not None:
@@ -58,15 +111,6 @@ class Scanner(object):
             cachedir = os.path.dirname(os.path.realpath(cache))
             if not os.path.isdir(cachedir):
                 os.makedirs(cachedir)
-
-    def __eq__(self, other):
-        return (self._cmd == other._cmd
-                and self._detect_cmd == other._detect_cmd
-                and self._priority == other._priority
-                and self._root_path == other._root_path)
-
-    def __lt__(self, other):
-        return self._priority < other._priority
 
     @classmethod
     def from_configparser(cls, section, parser):
@@ -90,7 +134,7 @@ class Scanner(object):
 
         cmd = parser.get(section, 'cmd').replace('\n', ' ')
 
-        return cls(cmd, **kwds)
+        return cls(section, cmd, **kwds)
 
     def is_suitable(self, path):
         """

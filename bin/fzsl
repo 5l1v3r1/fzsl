@@ -43,7 +43,7 @@ def build_scanners(parser):
     for section in parser.sections():
         if section == 'fzsl':
             continue
-        scanners.append(fzsl.Scanner.from_configparser(section, parser))
+        scanners.append(fzsl.SimpleScanner.from_configparser(section, parser))
 
     scanners.sort()
     scanners.reverse()
@@ -53,7 +53,7 @@ def pick_scanner(scanners):
     cwd = os.getcwd()
     avail = [scanner for scanner in scanners if scanner.is_suitable(cwd)]
     if len(avail) == 0:
-        return fzsl.Scanner('find .')
+        return fzsl.SimpleScanner('default', 'find .')
     else:
         return avail[0]
 
@@ -85,7 +85,7 @@ def main():
         scanner = pick_scanner(scanners)
     else:
         try:
-            scanner = fzsl.Scanner.from_configparser(rule, parser)
+            scanner = fzsl.SimpleScanner.from_configparser(rule, parser)
         except configparser.NoSectionError:
             print('Rule "%s" is not defined' % (rule,))
             sys.exit(1)

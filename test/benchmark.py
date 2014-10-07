@@ -11,7 +11,8 @@ import fzsl
 
 class Benchmark(unittest.TestCase):
     def setUp(self):
-        self._scanner = fzsl.Scanner(
+        self._scanner = fzsl.SimpleScanner(
+                'test',
                 cmd='cat %s/files' % (TESTDIR,),
                 priority=1)
 
