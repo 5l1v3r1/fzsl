@@ -1,7 +1,13 @@
+import cStringIO
 import os
 import sys
 import tempfile
 import unittest
+
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 TESTDIR = os.path.realpath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.realpath(os.path.join(TESTDIR, '..')))
@@ -66,7 +72,33 @@ class SimpleScannerTest(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0], 'hi')
 
-        
+    def test_load(self):
+        buf = "[some-rule]\n"
+
+        parser = configparser.RawConfigParser()
+        parser.readfp(cStringIO.StringIO(buf))
+
+        with self.assertRaises(fzsl.NoTypeError):
+            fzsl.scanner_from_configparser('some-rule', parser)
+
+        buf += "type: junk\n"
+        parser.readfp(cStringIO.StringIO(buf))
+        with self.assertRaises(fzsl.UnknownTypeError):
+            fzsl.scanner_from_configparser('some-rule', parser)
+
+        buf = "[some-rule]\ntype = simple\n"
+        parser.readfp(cStringIO.StringIO(buf))
+        with self.assertRaises(configparser.NoOptionError):
+            fzsl.scanner_from_configparser('some-rule', parser)
+
+        buf += "cmd = echo\n"
+        parser.readfp(cStringIO.StringIO(buf))
+        r = fzsl.scanner_from_configparser('some-rule', parser)
+        self.assertIsInstance(r, fzsl.Scanner)
+
+
+
+
 
 def main():
     unittest.main()

@@ -9,6 +9,12 @@ class SubprocessError(Exception):
         super(SubprocessError, self).__init__(
                 'Failed to run: "%s" in %s: %s' % (cmd, cwd, error))
 
+class NoTypeError(Exception):
+    pass
+
+class UnknownTypeError(Exception):
+    pass
+
 @functools.total_ordering
 class Scanner(object):
     __metaclass__ = abc.ABCMeta
@@ -224,4 +230,26 @@ class SimpleScanner(Scanner):
                     fp.write('\n'.join(ret))
 
         return ret
+
+def scanner_from_configparser(section, parser):
+    """
+    Create a Scanner from a config parser section.
+
+    @param section  - section of the config defining a Scanner
+    @param parser   - parser contining definition
+    @return         - Object derived from the base Scanner class as
+                      defined by the config section
+    """
+    if not parser.has_option(section, 'type'):
+        raise NoTypeError('type not specified for section "%s"' % (section,))
+
+    scanner_type = parser.get(section, 'type')
+
+    if scanner_type == 'simple':
+        scanner = SimpleScanner.from_configparser(section, parser)
+    else:
+        raise UnknownTypeError('Unknown type "%s" for section "%s"' % (
+            scanner_type, section))
+
+    return scanner
 
