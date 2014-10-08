@@ -36,26 +36,6 @@ class Benchmark(unittest.TestCase):
                     '/usr/src/linux/drivers/net/ethernet/intel/e1000e/phy.c',
                     fm.top_matches())
 
-    def test_delete(self):
-        files = self._scanner.scan(TESTDIR)
-
-        fm = fzsl.FuzzyMatch(files=files)
-
-        fm.update_scores("abc")
-        matches = fm.n_matches
-
-        fm.update_scores("abcd")
-        self.assertNotEqual(matches, fm.n_matches)
-
-        fm.update_scores("abc")
-        self.assertEqual(matches, fm.n_matches)
-
-        fm.update_scores("ab")
-        fm.update_scores("a")
-        fm.update_scores("")
-        self.assertEqual(fm.n_matches, fm.n_files)
-
-
 def main():
     unittest.main()
 
