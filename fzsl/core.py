@@ -60,7 +60,7 @@ def default_scorer(path, c_round, regex):
                       score, round_ejected.  That is:
                       (path, (start, end, score, round_ejected))
     """
-    matches = [m for m in regex.finditer(path, re.IGNORECASE)]
+    matches = [m for m in regex.finditer(path)]
     if matches:
         def score(match):
             return 1.0 / (len(path) - match.start(1))
@@ -68,7 +68,7 @@ def default_scorer(path, c_round, regex):
         ranked = [(score(m), m) for m in matches]
         score, best = max(ranked)
 
-        return path, (best.start(1), best.end(1), score, 0)
+        return path, (best.start(1), best.end(1) - 1, score, 0)
     else:
         return path, (0, 0, 0.0, c_round)
 
@@ -171,12 +171,16 @@ class FuzzyMatch(object):
             _ = [quick_score(path, info) for path, info in self._library.items()]
             return
 
-        regex = re.compile('(?=(' + '.*?'.join(re.escape(c) for c in search) + '))')
-
+        pattern = '(?=(' + '.*?'.join(re.escape(c) for c in search) + '))'
+        regex = re.compile(pattern, re.IGNORECASE)
 
         scorer = functools.partial(self._scorer, c_round=s_len, regex=regex)
-        candidates = [path for path, info in self._library.items() if info.round_ejected == 0]
-        _ = [self._library[path].update(*update) for path, update in self._pool.map(scorer, candidates)]
+        candidates = [path for path, info
+                in self._library.items()
+                if info.round_ejected == 0]
+
+        _ = [self._library[path].update(*update)
+                for path, update in self._pool.map(scorer, candidates)]
 
     def score(self, path):
         """

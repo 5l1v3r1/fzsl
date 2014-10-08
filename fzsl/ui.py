@@ -117,6 +117,8 @@ class SimplePager(object):
 
             start = self._fm.start(match)
             end = self._fm.end(match)
+            if end > 0 and len(self._search) > 0:
+                end += 1
             line = self._max_y - index - 1
             decor = 0
             if self._selection == index:
