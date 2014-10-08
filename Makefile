@@ -5,6 +5,7 @@ ACTIVATE = source virtualenv/bin/activate
 REQUIREMENTS = $(shell cat requirements.txt)
 TESTS = $(wildcard test/*.py)
 VERSION = $(shell python setup.py --version)
+MODULE_FILES = $(wildcard fzsl/*.py) bin/fzsl etc/fzsl.bash etc/fzsl.conf
 
 .PHONY: test
 
@@ -34,7 +35,7 @@ test: virtualenv
 		echo "All tests passed."; \
 	fi
 
-dist/fzsl-$(VERSION).tar.gz: virtualenv
+dist/fzsl-$(VERSION).tar.gz: virtualenv $(MODULE_FILES)
 	python setup.py sdist
 
 dev-install: dist/fzsl-$(VERSION).tar.gz
