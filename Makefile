@@ -3,7 +3,7 @@ VIRTUALENV ?= /usr/bin/env virtualenv
 
 ACTIVATE = source virtualenv/bin/activate
 REQUIREMENTS = $(shell cat requirements.txt)
-TESTS = $(wildcard test/*.py)
+TESTS = $(wildcard test/test_*.py)
 VERSION = $(shell python setup.py --version)
 MODULE_FILES = $(wildcard fzsl/*.py) bin/fzsl etc/fzsl.bash etc/fzsl.conf
 
