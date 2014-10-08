@@ -15,6 +15,9 @@ class NoTypeError(Exception):
 class UnknownTypeError(Exception):
     pass
 
+class ConfigError(Exception):
+    pass
+
 @functools.total_ordering
 class Scanner(object):
     __metaclass__ = abc.ABCMeta
@@ -231,6 +234,54 @@ class SimpleScanner(Scanner):
 
         return ret
 
+def plugin_scanner_from_configparser(section, parser):
+    """
+    Create a plugin scanner from a config parser section.  A plugin
+    scanner is defined in an external python file.  The configparser
+    must have the 'path' and 'object' options defined.  Any other
+    options (excluding 'type') are passed as keyword arguments to
+    the scanner constructor.  Note that each option value passed in
+    this manner will be a string.
+
+    @option type    - this must be set to python
+    @option path    - path to the python file containing the scanner
+    @option object  - name of the scanner object
+
+    @param section  - section of the config defining a Scanner
+    @param parser   - parser contining definition
+    @return         - Object derived from the base Scanner class as
+                      defined by the config section
+    """
+    if not parser.has_option(section, 'path'):
+        raise ConfigError('path not specified for section "%s"' % (section,))
+
+    if not parser.has_option(section, 'object'):
+        raise ConfigError('object not specified for section "%s"' % (section,))
+
+    kwds = {}
+    for option in parser.options(section):
+        if option in ('type', 'path', 'object'):
+            continue
+        kwds[option] = parser.get(section, option)
+
+    env = {}
+    path = parser.get(section, 'path')
+    obj = parser.get(section, 'object')
+
+    try:
+        execfile(path, env)
+    except Exception, e:
+        raise ConfigError('Failed to load plugin "%s": %s' % (
+            path, str(e)))
+
+    try:
+        scanner = env[obj](**kwds)
+    except Exception, e:
+        raise ConfigError('Failed to create %s:%s with args %s: %s' % (
+            path, obj, str(kwds), str(e)))
+
+    return scanner
+
 def scanner_from_configparser(section, parser):
     """
     Create a Scanner from a config parser section.
@@ -247,6 +298,8 @@ def scanner_from_configparser(section, parser):
 
     if scanner_type == 'simple':
         scanner = SimpleScanner.from_configparser(section, parser)
+    elif scanner_type == 'python':
+        scanner = plugin_scanner_from_configparser(section, parser)
     else:
         raise UnknownTypeError('Unknown type "%s" for section "%s"' % (
             scanner_type, section))

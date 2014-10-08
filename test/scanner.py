@@ -72,7 +72,7 @@ class SimpleScannerTest(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0], 'hi')
 
-    def test_load(self):
+    def test_load_rule(self):
         buf = "[some-rule]\n"
 
         parser = configparser.RawConfigParser()
@@ -96,10 +96,39 @@ class SimpleScannerTest(unittest.TestCase):
         r = fzsl.scanner_from_configparser('some-rule', parser)
         self.assertIsInstance(r, fzsl.Scanner)
 
+    def test_load_plugin(self):
+        buf = '[rule]\ntype=python\npath=%s/plugins/test_plugin.py\n' % (
+                TESTDIR,)
 
+        parser = configparser.RawConfigParser()
 
+        parser.readfp(cStringIO.StringIO(buf + "object=UnsuitableScanner\n"))
+        scanner = fzsl.scanner_from_configparser('rule', parser)
+        self.assertFalse(scanner.is_suitable(''))
 
+        parser.readfp(cStringIO.StringIO(buf + "object=ABCScanner\n"))
+        scanner = fzsl.scanner_from_configparser('rule', parser)
+        self.assertTrue(scanner.is_suitable(''))
+        self.assertEqual(scanner.scan(''), ['a', 'b', 'c'])
 
+        b = "object=KwdsScanner\n"
+        b += 'arg1=1\narg2=abc\narg3=some string\n'
+        parser.readfp(cStringIO.StringIO(buf + b))
+        scanner = fzsl.scanner_from_configparser('rule', parser)
+        self.assertEqual(scanner.scan(''), ['1', 'abc', 'some string'])
+
+        with self.assertRaises(fzsl.ConfigError):
+            parser.readfp(cStringIO.StringIO(buf + "object=BrokenScanner1\n"))
+            scanner = fzsl.scanner_from_configparser('rule', parser)
+            
+        with self.assertRaises(fzsl.ConfigError):
+            parser.readfp(cStringIO.StringIO(buf + "object=BrokenScanner2\n"))
+            scanner = fzsl.scanner_from_configparser('rule', parser)
+
+        with self.assertRaises(fzsl.ConfigError):
+            parser.readfp(cStringIO.StringIO(buf + "object=BrokenScanner3\n"))
+            scanner = fzsl.scanner_from_configparser('rule', parser)
+ 
 def main():
     unittest.main()
 

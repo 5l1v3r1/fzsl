@@ -8,6 +8,7 @@ from ui import (
 )
 
 from scanner import (
+    ConfigError,
     NoTypeError,
     Scanner,
     scanner_from_configparser,
