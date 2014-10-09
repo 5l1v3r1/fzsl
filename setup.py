@@ -12,6 +12,7 @@ setuptools.setup(
         name='fzsl',
         version='1.0',
         description='Fuzzy path searching for shells',
+        license='BSD',
         long_description=(read('README.txt')),
         author='Justin Bronder',
         author_email='jsbronder@gmail.com',
