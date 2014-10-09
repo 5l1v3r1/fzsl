@@ -1,13 +1,13 @@
-from core import (
+from . core import (
     FuzzyMatch,
 )
 
-from ui import (
+from . ui import (
     ncurses,
     SimplePager,
 )
 
-from scanner import (
+from . scanner import (
     ConfigError,
     NoTypeError,
     Scanner,
@@ -16,3 +16,4 @@ from scanner import (
     SubprocessError,
     UnknownTypeError,
 )
+

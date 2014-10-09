@@ -45,10 +45,7 @@ class BrokenScanner2(fzsl.Scanner):
     def is_suitable(self, path):
         return True
 
-class BrokenScanner3(fzsl.Scanner):
-    def __init__(self):
-        super(BrokenScanner3, self).__init__('broken3')
-
+class BrokenScanner3(object):
     def is_suitable(self, path):
         return True
 

@@ -3,6 +3,8 @@ import functools
 import os
 import subprocess
 
+import six
+
 
 class SubprocessError(Exception):
     def __init__(self, cmd, cwd, error):
@@ -19,9 +21,7 @@ class ConfigError(Exception):
     pass
 
 @functools.total_ordering
-class Scanner(object):
-    __metaclass__ = abc.ABCMeta
-
+class Scanner(object, six.with_metaclass(abc.ABCMeta)):
     def __init__(self, name, priority=0):
         """
         @param name         - name of the Scanner.
@@ -226,11 +226,11 @@ class SimpleScanner(Scanner):
             if c.returncode != 0:
                 raise SubprocessError(self._cmd, cwd, stderr)
 
-            ret = [f.strip() for f in stdout.split()]
+            ret = [f.strip().decode('UTF-8') for f in stdout.split()]
 
             if self._cache is not None:
                 with open(self._cache, 'w') as fp:
-                    fp.write('\n'.join(ret))
+                    fp.write(u'\n'.join(ret))
 
         return ret
 
@@ -269,16 +269,21 @@ def plugin_scanner_from_configparser(section, parser):
     obj = parser.get(section, 'object')
 
     try:
-        execfile(path, env)
-    except Exception, e:
+        with open(path) as fp:
+            exec(compile(fp.read(), path, 'exec'), env)
+    except Exception as e:
         raise ConfigError('Failed to load plugin "%s": %s' % (
             path, str(e)))
 
     try:
         scanner = env[obj](**kwds)
-    except Exception, e:
+    except Exception as e:
         raise ConfigError('Failed to create %s:%s with args %s: %s' % (
             path, obj, str(kwds), str(e)))
+
+    if not isinstance(scanner, Scanner):
+        raise ConfigError('%s:%s is not an instance of fzsl.Scanner' % (
+            path, obj))
 
     return scanner
 

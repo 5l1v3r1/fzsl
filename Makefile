@@ -1,7 +1,9 @@
 SHELL = /bin/bash
+
+PYTHON_VERSION ?= 2.7
 VIRTUALENV ?= /usr/bin/env virtualenv
 
-ACTIVATE = source virtualenv/bin/activate
+ACTIVATE = source virtualenv$(PYTHON_VERSION)/bin/activate
 REQUIREMENTS = $(shell cat requirements.txt)
 TESTS = $(wildcard test/test_*.py)
 VERSION = $(shell python setup.py --version)
@@ -9,15 +11,15 @@ MODULE_FILES = $(wildcard fzsl/*.py) bin/fzsl etc/fzsl.bash etc/fzsl.conf
 
 .PHONY: test
 
-all: virtualenv
+all: virtualenv$(PYTHON_VERSION)
 
-virtualenv: requirements.txt
-	@$(VIRTUALENV) virtualenv
+virtualenv$(PYTHON_VERSION): requirements.txt
+	@$(VIRTUALENV) --python=python$(PYTHON_VERSION) virtualenv$(PYTHON_VERSION)
 	@if [ -n "$(REQUIREMENTS)" ]; then \
 		$(ACTIVATE); pip install $(REQUIREMENTS); \
 	fi
 
-test: virtualenv
+test: virtualenv$(PYTHON_VERSION)
 	@failed=""; \
 	for test in $(TESTS); do \
 		echo "Testing $${test#*_}"; \
@@ -35,14 +37,14 @@ test: virtualenv
 		echo "All tests passed."; \
 	fi
 
-dist/fzsl-$(VERSION).tar.gz: virtualenv $(MODULE_FILES)
+dist/fzsl-$(VERSION).tar.gz: virtualenv$(PYTHON_VERSION) $(MODULE_FILES)
 	python setup.py sdist
 
 dev-install: dist/fzsl-$(VERSION).tar.gz
-	$(ACTIVATE); pip install --no-index dist/fzsl-$(VERSION).tar.gz
+	$(ACTIVATE); pip install --upgrade --force-reinstall --no-index dist/fzsl-$(VERSION).tar.gz
 
 clean:
-	rm -rf virtualenv
+	rm -rf virtualenv[23]*
 	rm -rf build
 	rm -rf dist
 	rm -rf fzsl.egg-info

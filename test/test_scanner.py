@@ -1,4 +1,3 @@
-import cStringIO
 import os
 import sys
 import tempfile
@@ -6,8 +5,13 @@ import unittest
 
 try:
     import configparser
+    import io
+    StringIO = io.StringIO
 except ImportError:
     import ConfigParser as configparser
+    configparser.RawConfigParser.read_file = configparser.RawConfigParser.readfp
+    import cStringIO
+    StringIO = cStringIO.StringIO
 
 TESTDIR = os.path.realpath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.realpath(os.path.join(TESTDIR, '..')))
@@ -58,10 +62,10 @@ class SimpleScannerTest(unittest.TestCase):
         self.assertTrue(s.is_suitable(TESTDIR))
 
     def test_scanner(self):
-        cache = tempfile.NamedTemporaryFile(dir=TESTDIR)
+        cache = tempfile.NamedTemporaryFile(dir=TESTDIR, mode='w')
 
         with open(os.path.join(TESTDIR, 'files'), 'r') as src:
-            cache.write('\n'.join(src.read().split()))
+            cache.write(u'\n'.join(src.read().split()))
         cache.flush()
 
         s = fzsl.SimpleScanner('test', 'echo hi', cache=cache.name)
@@ -76,23 +80,23 @@ class SimpleScannerTest(unittest.TestCase):
         buf = "[some-rule]\n"
 
         parser = configparser.RawConfigParser()
-        parser.readfp(cStringIO.StringIO(buf))
+        parser.read_file(StringIO(buf))
 
         with self.assertRaises(fzsl.NoTypeError):
             fzsl.scanner_from_configparser('some-rule', parser)
 
         buf += "type: junk\n"
-        parser.readfp(cStringIO.StringIO(buf))
+        parser.read_file(StringIO(buf))
         with self.assertRaises(fzsl.UnknownTypeError):
             fzsl.scanner_from_configparser('some-rule', parser)
 
         buf = "[some-rule]\ntype = simple\n"
-        parser.readfp(cStringIO.StringIO(buf))
+        parser.read_file(StringIO(buf))
         with self.assertRaises(configparser.NoOptionError):
             fzsl.scanner_from_configparser('some-rule', parser)
 
         buf += "cmd = echo\n"
-        parser.readfp(cStringIO.StringIO(buf))
+        parser.read_file(StringIO(buf))
         r = fzsl.scanner_from_configparser('some-rule', parser)
         self.assertIsInstance(r, fzsl.Scanner)
 
@@ -102,31 +106,36 @@ class SimpleScannerTest(unittest.TestCase):
 
         parser = configparser.RawConfigParser()
 
-        parser.readfp(cStringIO.StringIO(buf + "object=UnsuitableScanner\n"))
+        parser.read_file(StringIO(buf + "object=UnsuitableScanner\n"))
         scanner = fzsl.scanner_from_configparser('rule', parser)
         self.assertFalse(scanner.is_suitable(''))
 
-        parser.readfp(cStringIO.StringIO(buf + "object=ABCScanner\n"))
+        parser = configparser.RawConfigParser()
+        parser.read_file(StringIO(buf + "object=ABCScanner\n"))
         scanner = fzsl.scanner_from_configparser('rule', parser)
         self.assertTrue(scanner.is_suitable(''))
         self.assertEqual(scanner.scan(''), ['a', 'b', 'c'])
 
-        b = "object=KwdsScanner\n"
+        b = buf + "object=KwdsScanner\n"
         b += 'arg1=1\narg2=abc\narg3=some string\n'
-        parser.readfp(cStringIO.StringIO(buf + b))
+        parser = configparser.RawConfigParser()
+        parser.read_file(StringIO(b))
         scanner = fzsl.scanner_from_configparser('rule', parser)
         self.assertEqual(scanner.scan(''), ['1', 'abc', 'some string'])
 
         with self.assertRaises(fzsl.ConfigError):
-            parser.readfp(cStringIO.StringIO(buf + "object=BrokenScanner1\n"))
+            parser = configparser.RawConfigParser()
+            parser.read_file(StringIO(buf + "object=BrokenScanner1\n"))
             scanner = fzsl.scanner_from_configparser('rule', parser)
-            
+                
         with self.assertRaises(fzsl.ConfigError):
-            parser.readfp(cStringIO.StringIO(buf + "object=BrokenScanner2\n"))
+            parser = configparser.RawConfigParser()
+            parser.read_file(StringIO(buf + "object=BrokenScanner2\n"))
             scanner = fzsl.scanner_from_configparser('rule', parser)
 
         with self.assertRaises(fzsl.ConfigError):
-            parser.readfp(cStringIO.StringIO(buf + "object=BrokenScanner3\n"))
+            parser = configparser.RawConfigParser()
+            parser.read_file(StringIO(buf + "object=BrokenScanner3\n"))
             scanner = fzsl.scanner_from_configparser('rule', parser)
  
 def main():

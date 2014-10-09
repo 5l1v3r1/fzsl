@@ -3,6 +3,8 @@ import curses
 import os
 import sys
 
+import six
+
 import fzsl
 
 for i, color in enumerate(('white', 'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan')):
@@ -67,7 +69,7 @@ def ncurses():
     sys.stdout = old_stdout
 
     if exc is not None:
-        raise exc[0], exc[1], exc[2]
+        six.reraise(exc[0], exc[1], exc[2])
 
 
 class SimplePager(object):
@@ -110,9 +112,9 @@ class SimplePager(object):
             if len(self._search) > 0 and self._fm.score(match) == 0:
                 continue
 
-            prefix = ''
+            prefix = u''
             if self._show_score:
-                prefix = "%f     " % (self._fm.score(match),)
+                prefix = u'%f     ' % (self._fm.score(match),)
             offset = len(prefix)
 
             start = self._fm.start(match)
@@ -157,9 +159,9 @@ class SimplePager(object):
 
         while True:
             c = self._scr.getch()
-            key = curses.keyname(c)
+            key = curses.keyname(c).decode('UTF-8')
 
-            if key in ('^M'):
+            if key in (u'^M',):
                 # enter
                 break
             elif key  in ('KEY_DOWN', '^J'):
@@ -170,11 +172,11 @@ class SimplePager(object):
                 # up arrow, ctrl+k
                 self._selection = self._selection + 1 if self._selection < self._max_y - 2 else self._selection
                 self._draw_select()
-            elif key in ('KEY_LEFT'):
+            elif key in ('KEY_LEFT',):
                 if self._cursor_x > 0:
                     self._cursor_x -= 1
                     self._draw_prompt()
-            elif key in ('KEY_RIGHT'):
+            elif key in ('KEY_RIGHT',):
                 if self._cursor_x < len(self._search):
                     self._cursor_x += 1
                     self._draw_prompt()
