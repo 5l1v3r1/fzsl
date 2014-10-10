@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-PYTHON_VERSION ?= 2.7
+PYTHON_VERSION ?= python -c 'import sys;print("%d.%d" % (sys.version_info[0], sys.version_info[1]))'
 VIRTUALENV ?= /usr/bin/env virtualenv
 
 ACTIVATE = source virtualenv$(PYTHON_VERSION)/bin/activate
@@ -9,9 +9,12 @@ TESTS = $(wildcard test/test_*.py)
 VERSION = $(shell python setup.py --version)
 MODULE_FILES = $(wildcard fzsl/*.py) bin/fzsl etc/fzsl.bash etc/fzsl.conf
 
-.PHONY: test
+.PHONY: test dist
 
 all: virtualenv$(PYTHON_VERSION)
+
+dist: dist/fzsl-$(VERSION).tar.gz
+
 
 virtualenv$(PYTHON_VERSION): requirements.txt
 	@$(VIRTUALENV) --python=python$(PYTHON_VERSION) virtualenv$(PYTHON_VERSION)
