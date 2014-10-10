@@ -63,6 +63,44 @@ defined in *~/.bash_profile*::
     cmd = my_scanning_function
     priority = 100
 
+Options:
+
+type
+    This must be set to **simple**.
+
+cmd
+    The command to execute in the root directory that will output all possible
+    matches.  By default, the current working directory of the command will be
+    the same as that of the caller.  However, if root_path is specified, it
+    will be used instead.
+
+detect_cmd
+    This command will be executed to determine if the rule is a possible match
+    for the current working directory.  The command should return 0 for a valid
+    directory.
+
+root_path
+    The root path has two possible uses.  First, if the current working
+    directory is a subdirectory of the root path, the rule will be consider
+    suitable for use when scanning.  Second, if the root_path is specified
+    along with detect_cmd, then the root_path will be used as the current
+    working directory when executing the detect_cmd.
+
+priority
+    The priority is used to determine which rule to use when multiple rules are
+    considered suitable.  The higher the priority, the more likely it will be
+    selected.  Rules with a priority less than 0 are never considered unless
+    manually selected.
+
+cache
+    Path to a file that will be used to cache results for for this rule.  By
+    default, scanners will use the cache rather than rescanning the entire file
+    list.  Note that the cache is tied to the rule, so if the same 'cmd' needs
+    to be used with two different caches, it will have to be two different
+    rules.  If no cache is supplied, results will just be regenerated on each
+    run.  This is probably fine unless you have a really large number of files
+    (tens of thousands) to scan or a really slow disk.
+
 Python Scanners
 ---------------
 Python scanners offer a deeper level of customization for scanners.  They must
@@ -82,11 +120,22 @@ itself::
     # RuleScanner constructor
     cmd = find .
     priority = 0
-The only required options are:
 
-- ``type``:  This must be set to **python**.
-- ``path``:  Path to the python file containing the scanner implementation.
-- ``object``:  Name of the ``fzsl.Scanner`` derived class.
+Options:
+
+type
+    This must be set to **python**.
+
+path
+    Path to the python file containing the scanner implementation.
+
+object
+    Name of the ``fzsl.Scanner`` derived class.
+
+*
+    Any further options are passed as keyword arguments to the Scanners
+    constructor.  Note that as they are parsed by **ConfigParser** they
+    will be strings.
 
 Installation
 ------------
