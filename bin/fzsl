@@ -11,6 +11,12 @@ except ImportError:
 
 import fzsl
 
+__default_config_path__ = os.path.join(
+    sys.prefix,
+    'share',
+    'fzsl',
+    'fzsl.conf')
+
 __usage__ = """
 fzsl [ARGUMENTS]
 
@@ -24,8 +30,8 @@ ARGUMENTS:
 
 CONFIGURATION FILE:
     fzsl will use ~/.config/fzslrc if it exists, otherwise
-    %s/etc/fzsl/fzsl.conf will be used.
-""" % (sys.prefix,)
+    %s will be used.
+""" % (__default_config_path__,)
 
 def read_config(path=None):
     parser = configparser.RawConfigParser(allow_no_value=True)
@@ -33,7 +39,7 @@ def read_config(path=None):
     if path is None:
         path = os.path.expanduser('~/.config/fzslrc')
         if not os.path.exists(path):
-            path = '%s/etc/fzsl/fzsl.conf' % (sys.prefix,)
+            path = __default_config_path__
 
     parser.read(path)
     return parser

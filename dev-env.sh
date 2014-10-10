@@ -20,7 +20,7 @@ fi
 cat > ${bashrc} <<-EOF
 	[ -f ~/.bash_profile ] && source ~/.bash_profile
 	source ${topdir}/${virtualenv}/bin/activate
-	source ${topdir}/${virtualenv}/etc/fzsl/fzsl.bash
+	source ${topdir}/${virtualenv}/share/fzsl/fzsl.bash
 	__fzsl_bind_default_matching
 	__fzsl_create_fzcd
 EOF

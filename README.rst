@@ -21,7 +21,7 @@ All configuration of fzsl is done in an ini style which is interpreted by the
 python ConfigParser module.  Each section defines a new scanner with the
 section title used as the scanner name.  Configuration is read from
 *~/.config/fzslrc* if it exists, if not fzsl will fall back to
-*/etc/fzsl/fzsl.conf*.  The default configuration that ships with fzsl contains
+*/usr/share/fzsl/fzsl.conf*.  The default configuration that ships with fzsl contains
 full documentation for all scanner types and should be referenced.  It
 currently handles standard directories, git checkouts and scanning for only
 directories.  It also has a number of examples for how to define additional
@@ -148,7 +148,7 @@ script::
 Shell Functions
 ---------------
 fzsl will not modify your shell by default.  It is up to you to source the
-included */etc/fzsl/fzsl.bash*.  It defines two functions that will add
+included */usr/share/fzsl/fzsl.bash*.  It defines two functions that will add
 fzsl functionality directly to your shell.  See the script for further
 documentation.
 

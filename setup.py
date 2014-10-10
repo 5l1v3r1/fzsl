@@ -10,18 +10,20 @@ def read(*paths):
 
 setuptools.setup(
         name='fzsl',
-        version='0.1',
+        version=0.1,
         description='Fuzzy path searching for shells',
         license='BSD',
         long_description=(read('README.rst')),
         author='Justin Bronder',
         author_email='jsbronder@gmail.com',
         url='http://github.com/jsbronder/fzsl',
-        include_package_data=True,
         keywords='fuzzy shell search console match ncurses',
         packages=['fzsl'],
-        data_files=[
-            ('%s/etc/fzsl' % (sys.prefix,), ['etc/fzsl.bash', 'etc/fzsl.conf']),
+        package_data = {
+          '': ['*.rst', 'etc/fzsl.*', 'LICENSE'],
+        },
+        data_files = [
+          ('share/fzsl/', ['README.rst', 'LICENSE', 'etc/fzsl.bash', 'etc/fzsl.conf']),
         ],
         scripts=['bin/fzsl'],
         install_requires=['six'],

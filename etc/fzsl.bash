@@ -29,7 +29,7 @@ __fzsl_create_fzcd() {
     local rule=${1:-dirs-only}
 
     fzcd() {
-        local dir=$(fzsl -c ~/scm/fzsl/etc/fzsl.conf --rule dirs-only)
+        local dir=$(fzsl --rule dirs-only)
         [ -n "${dir}" ] && cd ${dir}
     }
 }
