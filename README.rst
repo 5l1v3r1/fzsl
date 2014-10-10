@@ -132,7 +132,7 @@ path
 object
     Name of the ``fzsl.Scanner`` derived class.
 
-*
+\*
     Any further options are passed as keyword arguments to the Scanners
     constructor.  Note that as they are parsed by **ConfigParser** they
     will be strings.
