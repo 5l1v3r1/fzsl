@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-PYTHON_VERSION ?= python -c 'import sys;print("%d.%d" % (sys.version_info[0], sys.version_info[1]))'
+PYTHON_VERSION ?= $(shell python -c 'import sys;print("%d.%d" % (sys.version_info[0], sys.version_info[1]))')
 VIRTUALENV ?= /usr/bin/env virtualenv
 
 ACTIVATE = source virtualenv$(PYTHON_VERSION)/bin/activate
