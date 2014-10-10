@@ -4,10 +4,10 @@ FuZzy SheLl
 Introduction
 ------------
 
-Fuzzy file or path  searcher in the shell which provides path completion
-similar to ctrlp.  Start a command and then hit Ctrl+p to see a list of
-possible paths.  Enter search terms to narrow down the list and then select the
-appropriate completion using your arrow keys or Ctrl+j/k.
+Fuzzy file or path searcher in the shell which provides path completion similar
+to ctrlp.  Start a command and then hit Ctrl+p to see a list of possible paths.
+Enter search terms to narrow down the list and then select the appropriate
+completion using your arrow keys or Ctrl+j/k.
 
 fzsl uses a single matching algorithm but provides the user with a wide variety
 of ways to influence how file scanning is performed as it is by far the most
@@ -17,7 +17,7 @@ user-selected priority.
 
 Configuration
 -------------
-All configuration of fzsl is done in a ini style which is interpreted by the
+All configuration of fzsl is done in an ini style which is interpreted by the
 python ConfigParser module.  Each section defines a new scanner with the
 section title used as the scanner name.  Configuration is read from
 *~/.config/fzslrc* if it exists, if not fzsl will fall back to
@@ -25,15 +25,15 @@ section title used as the scanner name.  Configuration is read from
 full documentation for all scanner types and should be referenced.  It
 currently handles standard directories, git checkouts and scanning for only
 directories.  It also has a number of examples for how to define additional
-scanners.  Scanners with a priority less than 0 can only be used by passing
-the scanner name to fzsl with the **--rule** argument.
+scanners.  Scanners with a priority less than 0 can only be used by passing the
+scanner name to fzsl with the **--rule** argument.
 
 Simple Scanners
 ---------------
 Simple scanners use shell commands and or functions to check if they are suitable
 and to scan for files.  They are very easy to configure and should support the
-vast majority of use cases.  Simple scanners are defined by setting a two shell
-command that should be executed.  The first detects if the scanner is suitable
+vast majority of use cases.  Simple scanners are defined by setting two shell
+commands that should be executed.  The first detects if the scanner is suitable
 for the current working directory and the second performs the scanning.  Simple
 scanners should also set a priority for ranking if more than one scanner is
 valid.  If the priority is not specified, it defaults to 0.  Finally, a cache
@@ -54,9 +54,9 @@ and root path for the scanning command can be set.  For example::
     cmd = find .
     cache = ~/.fzsl-cache/linux
 
-The only requirement for the **cmd** and **detect_cmd** is that it is available
-in your standard login shell.  For instance, if using bash, it should be
-defined in *~/.bash_profile*::
+The only requirement for the **cmd** and **detect_cmd** is that they are
+available in your standard login shell.  For instance, if using bash, they
+should be defined in *~/.bash_profile*::
     [shell-function-scanner]
     type = simple
     detect_cmd = my_detect_function
@@ -71,45 +71,45 @@ type
 cmd
     The command to execute in the root directory that will output all possible
     matches.  By default, the current working directory of the command will be
-    the same as that of the caller.  However, if root_path is specified, it
+    the same as that of the caller.  However, if the root_path is specified, it
     will be used instead.
 
 detect_cmd
-    This command will be executed to determine if the rule is a possible match
-    for the current working directory.  The command should return 0 for a valid
-    directory.
+    This command will be executed to determine if the scanner is a possible
+    match for the current working directory.  The command should return 0 for a
+    valid directory.
 
 root_path
     The root path has two possible uses.  First, if the current working
-    directory is a subdirectory of the root path, the rule will be consider
+    directory is a subdirectory of the root path, the scanner will be consider
     suitable for use when scanning.  Second, if the root_path is specified
     along with detect_cmd, then the root_path will be used as the current
     working directory when executing the detect_cmd.
 
 priority
-    The priority is used to determine which rule to use when multiple rules are
-    considered suitable.  The higher the priority, the more likely it will be
-    selected.  Rules with a priority less than 0 are never considered unless
-    manually selected.
+    The priority is used to determine which scanner to use when multiple
+    scanners are considered suitable.  The higher the priority, the more likely
+    it will be selected.  Scanners with a priority less than 0 are never
+    considered unless manually selected via the **--rule** argument.
 
 cache
-    Path to a file that will be used to cache results for for this rule.  By
+    Path to a file that will be used to cache results for for this scanner.  By
     default, scanners will use the cache rather than rescanning the entire file
-    list.  Note that the cache is tied to the rule, so if the same 'cmd' needs
-    to be used with two different caches, it will have to be two different
-    rules.  If no cache is supplied, results will just be regenerated on each
-    run.  This is probably fine unless you have a really large number of files
-    (tens of thousands) to scan or a really slow disk.
+    list.  Note that the cache is tied to the scanner, so if the same **cmd**
+    needs to be used with two different caches, it will have to be two
+    different scanners.  If no cache is supplied, results will just be
+    regenerated on each run.  This is probably fine unless you have a really
+    large number of files (tens of thousands) to scan or a really slow disk.
 
 Python Scanners
 ---------------
 Python scanners offer a deeper level of customization for scanners.  They must
 derive from the **fzsl.Scanner** class.  See ``pydoc fzsl.Scanner``.  The
-priority attribute should be set and the ``is_suitable(self, path`` and
-``scan(self, path=None, rescan=False)`` need to be defined.  Any caching is
-left up to the implementor.  Any options set in the scanner configuration are
-passed to the scanners ``__init__`` method as keyword arguments.  Perhaps the
-best example is to show how one could create a Simple Scanner using fzsl
+priority attribute should be set and the methods ``is_suitable(self, path)``
+and ``scan(self, path=None, rescan=False)`` need to be defined.  Any caching is
+left up to the implementor.  Any extra options set in the scanner configuration
+are passed to the scanners ``__init__`` method as keyword arguments.  Perhaps
+the best example is to show how one could create a Simple Scanner using fzsl
 itself::
     # Example plugin file that loads the default simple scanner.
     [default-via-plugin]
@@ -139,7 +139,7 @@ object
 
 Installation
 ------------
-fzsl can be installed via pip or by simply running the included setup.py
+fzsl can be installed via pip or by simply running the included ``setup.py``
 script::
     pip install fzsl
     # OR
@@ -153,11 +153,11 @@ fzsl functionality directly to your shell.  See the script for further
 documentation.
 
 - ``__fzsl_bind_default_matching [BINDING]``:  Binds ctrl-p to launch fuzzy
-  scanning.  If ctrl-p is not desired, another readline style keybinding can
-  be specified.  When launched, fzsl will scan the current directory and
-  provide UI for updating the current query for fuzzy matching.  On completion
-  the current command line will be preserved and the matched path will be
-  appended.
+  scanning.  If ctrl-p is not desired, another readline style keybinding can be
+  specified.  When launched, fzsl will scan the current directory and provide a
+  UI for updating the current query for fuzzy matching.  On completion the
+  current command line will be preserved and the matched path will be appended.
+
 - ``__fzsl_create_fzcd [SCANNER]"``:  Creates the ``fzcd`` function which will
   change the current directory to the fuzzily matched path on completion. By
   default the shipped **dirs-only** scanner will be used.  Another scanner can
@@ -174,7 +174,7 @@ best matched against the query.  The user can also move the cursor around to
 support editing of the query.  The following keybindings are defined.
 
 - **Enter**:  Finish completion and echo the currently selected path, if any.
-- **Down Arrow**/**ctrl+j**:  Select the next path down in the list.
+- **Down Arrow**/**ctrl+j**:  Select the next path in the list.
 - **Up Arrow**/**ctrl+k**:  Select the previous path in the list.
 - **Left Arrow**:  Move the cursor left.
 - **Right Arrow**:  Move the cursor right.
