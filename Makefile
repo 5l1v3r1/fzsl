@@ -41,7 +41,8 @@ dist/fzsl-$(VERSION).tar.gz: virtualenv$(PYTHON_VERSION) $(MODULE_FILES)
 	python setup.py sdist
 
 dev-install: dist/fzsl-$(VERSION).tar.gz
-	$(ACTIVATE); pip install --upgrade --force-reinstall --no-index dist/fzsl-$(VERSION).tar.gz
+	$(ACTIVATE); pip install --no-deps \
+		--upgrade --force-reinstall --no-index dist/fzsl-$(VERSION).tar.gz
 
 clean:
 	rm -rf virtualenv[23]*
