@@ -143,7 +143,7 @@ fzsl can be installed via pip or by simply running the included ``setup.py``
 script::
     pip install fzsl
     # OR
-    python setup.py install
+    python setup.py install --root <destination> --record installed_files.txt
 
 Shell Functions
 ---------------
