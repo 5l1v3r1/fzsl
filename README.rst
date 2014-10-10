@@ -5,9 +5,9 @@ Introduction
 ------------
 
 Fuzzy file or path searcher in the shell which provides path completion similar
-to ctrlp.  Start a command and then hit Ctrl+p to see a list of possible paths.
-Enter search terms to narrow down the list and then select the appropriate
-completion using your arrow keys or Ctrl+j/k.
+to the ctrlp_ plugin for vim.  Start a command and then hit Ctrl+p to see a list
+of possible paths.  Enter search terms to narrow down the list and then select
+the appropriate completion using your arrow keys or Ctrl+j/k.
 
 fzsl uses a single matching algorithm but provides the user with a wide variety
 of ways to influence how file scanning is performed as it is by far the most
@@ -197,3 +197,4 @@ Errata
 :Source/Homepage:
     http://github.com/jsbronder/fzsl
 
+.. _ctrlp: https://github.com/kien/ctrlp.vim
