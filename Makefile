@@ -37,7 +37,7 @@ test: virtualenv$(PYTHON_VERSION)
 		echo "All tests passed."; \
 	fi
 
-dist/fzsl-$(VERSION).tar.gz: virtualenv$(PYTHON_VERSION) $(MODULE_FILES)
+dist/fzsl-$(VERSION).tar.gz: virtualenv$(PYTHON_VERSION) $(MODULE_FILES) setup.py
 	python setup.py sdist
 
 dev-install: dist/fzsl-$(VERSION).tar.gz
