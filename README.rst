@@ -38,6 +38,7 @@ for the current working directory and the second performs the scanning.  Simple
 scanners should also set a priority for ranking if more than one scanner is
 valid.  If the priority is not specified, it defaults to 0.  Finally, a cache
 and root path for the scanning command can be set.  For example::
+
     # Standard git rule
     [git]
     type = simple
@@ -57,6 +58,7 @@ and root path for the scanning command can be set.  For example::
 The only requirement for the **cmd** and **detect_cmd** is that they are
 available in your standard login shell.  For instance, if using bash, they
 should be defined in *~/.bash_profile*::
+
     [shell-function-scanner]
     type = simple
     detect_cmd = my_detect_function
@@ -111,6 +113,7 @@ left up to the implementor.  Any extra options set in the scanner configuration
 are passed to the scanners ``__init__`` method as keyword arguments.  Perhaps
 the best example is to show how one could create a Simple Scanner using fzsl
 itself::
+
     # Example plugin file that loads the default simple scanner.
     [default-via-plugin]
     type = python
@@ -141,6 +144,7 @@ Installation
 ------------
 fzsl can be installed via pip or by simply running the included ``setup.py``
 script::
+
     pip install fzsl
     # OR
     python setup.py install --root <destination> --record installed_files.txt
