@@ -65,36 +65,36 @@ should be defined in *~/.bash_profile*::
     cmd = my_scanning_function
     priority = 100
 
-Options:
+**Options**:
 
-type
+**type**
     This must be set to **simple**.
 
-cmd
+**cmd**
     The command to execute in the root directory that will output all possible
     matches.  By default, the current working directory of the command will be
     the same as that of the caller.  However, if the root_path is specified, it
     will be used instead.
 
-detect_cmd
+**detect_cmd**
     This command will be executed to determine if the scanner is a possible
     match for the current working directory.  The command should return 0 for a
     valid directory.
 
-root_path
+**root_path**
     The root path has two possible uses.  First, if the current working
     directory is a subdirectory of the root path, the scanner will be consider
     suitable for use when scanning.  Second, if the root_path is specified
     along with detect_cmd, then the root_path will be used as the current
     working directory when executing the detect_cmd.
 
-priority
+**priority**
     The priority is used to determine which scanner to use when multiple
     scanners are considered suitable.  The higher the priority, the more likely
     it will be selected.  Scanners with a priority less than 0 are never
     considered unless manually selected via the **--rule** argument.
 
-cache
+**cache**
     Path to a file that will be used to cache results for for this scanner.  By
     default, scanners will use the cache rather than rescanning the entire file
     list.  Note that the cache is tied to the scanner, so if the same **cmd**
@@ -124,18 +124,18 @@ itself::
     cmd = find .
     priority = 0
 
-Options:
+**Options**:
 
-type
+**type**
     This must be set to **python**.
 
-path
+**path**
     Path to the python file containing the scanner implementation.
 
-object
+**object**
     Name of the ``fzsl.Scanner`` derived class.
 
-\*
+**\***
     Any further options are passed as keyword arguments to the Scanners
     constructor.  Note that as they are parsed by **ConfigParser** they
     will be strings.
