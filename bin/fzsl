@@ -59,7 +59,7 @@ def pick_scanner(scanners):
     cwd = os.getcwd()
     avail = [scanner for scanner in scanners if scanner.is_suitable(cwd)]
     if len(avail) == 0:
-        return fzsl.SimpleScanner('default', 'find .')
+        return fzsl.SimpleScanner('default', 'find -L . || true')
     else:
         return avail[0]
 
