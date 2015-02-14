@@ -7,3 +7,4 @@ virtualenv[23]*/
 build/
 fzsl.egg-info/
 dist/
+installed_files.txt
