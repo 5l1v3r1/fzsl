@@ -20,7 +20,7 @@ __default_config_path__ = os.path.join(
 __usage__ = """
 fzsl [ARGUMENTS]
 
-Fuzzy Shell -  Launch a curses window to preform
+Fuzzy Shell -  Launch a curses window to perform
 fuzzy matching.
 
 ARGUMENTS:
