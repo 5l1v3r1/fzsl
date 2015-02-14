@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 import setuptools
-import sys
 
 def read(*paths):
     """Build a file path from *paths* and return the contents."""
