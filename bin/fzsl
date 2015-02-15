@@ -89,33 +89,16 @@ def main():
 
     parser = read_config(config)
 
-    # Put stdin into a non-blocking mode
-    fd = sys.stdin.fileno()
-    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+    if not sys.stdin.isatty():
+        # Create a scanner that simply has the list of provided paths
+        paths = [p.strip().decode('UTF-8') for p in sys.stdin]
+        scanner = fzsl.StaticScanner(paths)
 
-    # If paths have been piped directly to the script, read them into a list and
-    # create a StaticScanner.
-    paths = ""
-    while True:
-        try:
-            path = os.read(fd, 1024)
-            if not path:
-                break
-            paths += path
-        except OSError:
-            break
-        except Exception:
-            continue
-
-    if paths:
         # If input is piped in via stdin ncurses will receive bad input and
         # crash. To avoid that, we reopen the terminal.
         f = open("/dev/tty")
         os.dup2(f.fileno(), 0)
 
-        # Create a scanner that simply has the list of provided paths
-        scanner = fzsl.StaticScanner(paths.splitlines())
     elif rule is None:
         scanners = build_scanners(parser)
         scanner = pick_scanner(scanners)
