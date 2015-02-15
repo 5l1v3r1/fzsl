@@ -234,6 +234,50 @@ class SimpleScanner(Scanner):
 
         return ret
 
+class StaticScanner(Scanner):
+    """
+    This class is used to provided a static list of paths. Another way of
+    viewing it is that the paths have been pre-scanned and this scanner simply
+    serves the result.
+    """
+
+    def __init__(self, paths):
+        """
+        Creates a StaticScanner
+
+        The StaticScanner contains a list of paths that it provides for
+        matching. Thus there is no really scanning and all paths are
+        automatically suitable.
+
+        @option paths - a list of paths to use for matching
+
+        """
+        self._paths = paths
+
+    def is_suitable(self, path):
+        """
+        Returns True if the path is suitable
+
+        For the StaticScanner, this function always returns True.
+
+        @option path - the path to evaluate
+        @return a boolean indicating whether the path is suitable
+
+        """
+        return True
+
+    def scan(self, path=None, rescan=False):
+        """
+        Scan the path for a list of files.
+
+        @param path     - ignore by the StaticScanner
+        @param rescan   - ignore by the StaticScanner
+        @return         - list of paths contained in the StaticScanner
+
+        """
+        return self._paths
+
+
 def plugin_scanner_from_configparser(section, parser):
     """
     Create a plugin scanner from a config parser section.  A plugin

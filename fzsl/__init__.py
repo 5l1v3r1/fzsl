@@ -13,6 +13,7 @@ from . scanner import (
     Scanner,
     scanner_from_configparser,
     SimpleScanner,
+    StaticScanner,
     SubprocessError,
     UnknownTypeError,
 )
