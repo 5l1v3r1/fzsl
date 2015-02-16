@@ -19,7 +19,9 @@ build:
 	python setup.py build
 
 install: build
-	sudo python setup.py install --record installed_files.txt
+	sudo python setup.py install \
+		--record installed_files.txt \
+		--single-version-externally-managed
 
 uninstall:
 	@if [ -e "installed_files.txt" ]; then \
@@ -27,6 +29,7 @@ uninstall:
 			echo $${path}; \
 			sudo rm -rf $${path}; \
 		done < "installed_files.txt"; \
+		rm -f installed_files.txt; \
 	fi
 
 virtualenv$(PYTHON_VERSION): requirements.txt
