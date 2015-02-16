@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+import fcntl
 import getopt
 import os
 import sys
@@ -20,7 +21,7 @@ __default_config_path__ = os.path.join(
 __usage__ = """
 fzsl [ARGUMENTS]
 
-Fuzzy Shell -  Launch a curses window to preform
+Fuzzy Shell -  Launch a curses window to perform
 fuzzy matching.
 
 ARGUMENTS:
@@ -63,6 +64,7 @@ def pick_scanner(scanners):
     else:
         return avail[0]
 
+
 def main():
     try:
         opts, args = getopt.getopt(
@@ -86,7 +88,18 @@ def main():
             rule = a
 
     parser = read_config(config)
-    if rule is None:
+
+    if not sys.stdin.isatty():
+        # Create a scanner that simply has the list of provided paths
+        paths = [p.strip().decode('UTF-8') for p in sys.stdin]
+        scanner = fzsl.StaticScanner(paths)
+
+        # If input is piped in via stdin ncurses will receive bad input and
+        # crash. To avoid that, we reopen the terminal.
+        f = open("/dev/tty")
+        os.dup2(f.fileno(), 0)
+
+    elif rule is None:
         scanners = build_scanners(parser)
         scanner = pick_scanner(scanners)
     else:

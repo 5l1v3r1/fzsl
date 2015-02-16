@@ -15,6 +15,19 @@ all: virtualenv$(PYTHON_VERSION)
 
 dist: dist/fzsl-$(VERSION).tar.gz
 
+build:
+	python setup.py build
+
+install: build
+	sudo python setup.py install --record installed_files.txt
+
+uninstall:
+	@if [ -e "installed_files.txt" ]; then \
+		while read path; do \
+			echo $${path}; \
+			sudo rm -rf $${path}; \
+		done < "installed_files.txt"; \
+	fi
 
 virtualenv$(PYTHON_VERSION): requirements.txt
 	@$(VIRTUALENV) --python=python$(PYTHON_VERSION) virtualenv$(PYTHON_VERSION)
