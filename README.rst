@@ -182,10 +182,10 @@ support editing of the query.  The following keybindings are defined.
 - **Up Arrow**/**ctrl+k**:  Select the previous path in the list.
 - **Left Arrow**:  Move the cursor left.
 - **Right Arrow**:  Move the cursor right.
-- **ctrl_v**:  Enter verbose move which shows the scores for each path.
+- **ctrl+v**:  Enter verbose move which shows the scores for each path.
 - **Escape**:  Exit the UI without echoing the currently selected path.
 - **Backspace**:  Delete the character behind the cursor.
-- **F5**/**ctrl-r**: If the scanner has a cache, refresh it.
+- **F5**/**ctrl+r**: If the scanner has a cache, refresh it.
 
 Errata
 ------
