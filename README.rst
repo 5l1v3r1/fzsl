@@ -83,10 +83,10 @@ should be defined in *~/.bash_profile*::
 
 **root_path**
     The root path has two possible uses.  First, if the current working
-    directory is a subdirectory of the root path, the scanner will be consider
-    suitable for use when scanning.  Second, if the root_path is specified
-    along with detect_cmd, then the root_path will be used as the current
-    working directory when executing the detect_cmd.
+    directory is a subdirectory of the root path, the scanner will be
+    considered suitable for use when scanning.  Second, if the root_path is
+    specified along with detect_cmd, then the root_path will be used as the
+    current working directory when executing the detect_cmd.
 
 **priority**
     The priority is used to determine which scanner to use when multiple
