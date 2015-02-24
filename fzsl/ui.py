@@ -187,6 +187,25 @@ class SimplePager(object):
             elif key in ('^[',):
                 # escape
                 return ''
+            elif c in (curses.KEY_RESIZE,):
+                y, x = self._scr.getmaxyx()
+
+                # Have to handle the parent screen fully first otherwise updates
+                # to the subwindows don't seem to take.
+                curses.resizeterm(y, x)
+                self._scr.resize(y, x)
+                self._scr.erase()
+                self._scr.refresh()
+
+                self._max_y = y - 2
+                self._cursor_x = x if x < self._cursor_x else self._cursor_x
+
+                self._select.resize(y - 2, x)
+                self._draw_select()
+
+                self._prompt.resize(1, x)
+                self._prompt.mvwin(y-1, 0)
+                self._draw_prompt()
             else:
                 if key in ('KEY_BACKSPACE',):
                     # delete, backspace
