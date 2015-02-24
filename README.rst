@@ -88,6 +88,10 @@ should be defined in *~/.bash_profile*::
     specified along with detect_cmd, then the root_path will be used as the
     current working directory when executing the detect_cmd.
 
+    To use the stdout of a command rather than a fixed string as the root_path,
+    preface the root_command with a **!**.  For example,::
+        root_path = !echo "my/root/path"
+
 **priority**
     The priority is used to determine which scanner to use when multiple
     scanners are considered suitable.  The higher the priority, the more likely

@@ -106,10 +106,26 @@ class SimpleScanner(Scanner):
         self._cache = None
 
         if root_path is not None:
-            root_path = os.path.expandvars(root_path)
-            root_path = os.path.expanduser(root_path)
-            root_path = os.path.normpath(root_path)
-            self._root_path = os.path.realpath(root_path)
+            if root_path.startswith('!'):
+                try:
+                    c = subprocess.Popen(
+                            root_path[1:],
+                            shell=True,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE)
+                    stdout, stderr = c.communicate()
+                except:
+                    raise SubprocessError(root_path[1:], os.path.realpath(os.curdir), stderr)
+
+                if c.returncode != 0:
+                    raise SubprocessError(root_path[1:], os.path.realpath(os.curdir), stderr)
+
+                self._root_path = stdout.strip()
+            else:
+                root_path = os.path.expandvars(root_path)
+                root_path = os.path.expanduser(root_path)
+                root_path = os.path.normpath(root_path)
+                self._root_path = os.path.realpath(root_path)
 
         if cache is not None:
             cache = os.path.expandvars(cache)
