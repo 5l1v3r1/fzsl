@@ -240,7 +240,8 @@ class SimplePager(object):
                 self._draw_prompt()
 
         try:
-            return self._fm.top_matches(self._max_y)[self._selection]
+            match = self._fm.top_matches(self._max_y)[self._selection]
+            return self._scanner.transform(match)
         except IndexError:
             return ''
 

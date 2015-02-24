@@ -70,6 +70,17 @@ class Scanner(object, six.with_metaclass(abc.ABCMeta)):
         """
         pass
 
+    def transform(self, path):
+        """
+        Final tranform for a path.  This can be used to present matches which
+        are more user-friendly during the selection process when can later be
+        transformed via this method into the required match.
+
+        @param path - path to be transformed
+        @return     - the transformed path
+        """
+        return path
+
 
 class SimpleScanner(Scanner):
     def __init__(self, name, cmd, priority=0, detect_cmd=None, root_path=None, cache=None):
@@ -249,6 +260,14 @@ class SimpleScanner(Scanner):
                     fp.write(u'\n'.join(ret))
 
         return ret
+
+    def transform(self, path):
+        if self._root_path:
+            root_rel_path = os.path.join(self._root_path, path)
+            return os.path.normpath(root_rel_path)
+        else:
+            return path
+
 
 class StaticScanner(Scanner):
     """
