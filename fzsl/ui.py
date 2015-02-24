@@ -96,6 +96,7 @@ class SimplePager(object):
         self._prompt = curses.newwin(1, x, y-1, 0)
         self._select = curses.newwin(y - 2, x, 0, 0)
         self._max_y = y - 2
+        self._max_x = x - 1
         self._cursor_x = 0
 
     def _draw_select(self):
@@ -126,9 +127,15 @@ class SimplePager(object):
             if self._selection == index:
                 decor = curses.A_UNDERLINE
 
+            match = match[:self._max_x]
+            start = min(start, self._max_x)
+            end = min(end, self._max_x)
+
             self._select.addstr(line, 0, prefix + match[:start], decor)
-            self._select.addstr(line, start+offset, match[start:end], decor|curses.color_pair(COL_BCYAN))
-            self._select.addstr(line, end+offset, match[end:], decor)
+            if start + offset < self._max_x:
+                self._select.addstr(line, start+offset, match[start:end], decor|curses.color_pair(COL_BCYAN))
+            if end + offset < self._max_x:
+                self._select.addstr(line, end+offset, match[end:], decor)
         self._select.refresh()
 
     def _draw_prompt(self):
@@ -198,6 +205,7 @@ class SimplePager(object):
                 self._scr.refresh()
 
                 self._max_y = y - 2
+                self._max_x = x - 1
                 self._cursor_x = x if x < self._cursor_x else self._cursor_x
 
                 self._select.resize(y - 2, x)
