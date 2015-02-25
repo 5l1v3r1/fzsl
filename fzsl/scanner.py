@@ -123,9 +123,10 @@ class SimpleScanner(Scanner):
                             root_path[1:],
                             shell=True,
                             stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
                     stdout, stderr = c.communicate()
-                except:
+                except OSError:
                     raise SubprocessError(root_path[1:], os.path.realpath(os.curdir), stderr)
 
                 if c.returncode != 0:
@@ -196,9 +197,10 @@ class SimpleScanner(Scanner):
                         cwd=path,
                         shell=True,
                         stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE)
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
                 _, stderr = c.communicate()
-            except:
+            except OSError:
                 raise SubprocessError(self._detect_cmd, path, stderr)
 
             if c.returncode == 0:
@@ -245,9 +247,10 @@ class SimpleScanner(Scanner):
                         cwd=cwd,
                         shell=True,
                         stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE)
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
                 stdout, stderr = c.communicate()
-            except:
+            except OSError:
                 raise SubprocessError(self._cmd, cwd, stderr)
 
             if c.returncode != 0:
