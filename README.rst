@@ -90,6 +90,7 @@ should be defined in *~/.bash_profile*::
 
     To use the stdout of a command rather than a fixed string as the root_path,
     preface the root_command with a **!**.  For example,::
+
         root_path = !echo "my/root/path"
 
 **priority**
