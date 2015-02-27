@@ -9,7 +9,7 @@ def read(*paths):
 
 setuptools.setup(
         name='fzsl',
-        version=0.1,
+        version='0.2',
         description='Fuzzy path searching for shells',
         license='BSD',
         long_description=(read('README.rst')),
