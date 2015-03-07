@@ -1,7 +1,6 @@
 SHELL = /bin/bash
 
 PYTHON_VERSION ?= $(shell python -c 'import sys;print("%d.%d" % (sys.version_info[0], sys.version_info[1]))')
-VIRTUALENV ?= /usr/bin/env virtualenv
 
 ACTIVATE = source virtualenv$(PYTHON_VERSION)/bin/activate
 REQUIREMENTS = $(shell cat requirements.txt)
@@ -32,17 +31,10 @@ uninstall:
 		rm -f installed_files.txt; \
 	fi
 
-virtualenv$(PYTHON_VERSION): requirements.txt
-	@$(VIRTUALENV) --python=python$(PYTHON_VERSION) virtualenv$(PYTHON_VERSION)
-	@if [ -n "$(REQUIREMENTS)" ]; then \
-		$(ACTIVATE); pip install $(REQUIREMENTS); \
-	fi
-
-test: virtualenv$(PYTHON_VERSION)
+test:
 	@failed=""; \
 	for test in $(TESTS); do \
 		echo "Testing $${test#*_}"; \
-		$(ACTIVATE); \
 		python $${test} --verbose; \
 		if [ $$? -ne 0 ]; then \
 			failed+=" $${test}"; \
