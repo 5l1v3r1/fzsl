@@ -31,6 +31,12 @@ uninstall:
 		rm -f installed_files.txt; \
 	fi
 
+virtualenv$(PYTHON_VERSION): requirements.txt
+	@$(VIRTUALENV) --python=python$(PYTHON_VERSION) virtualenv$(PYTHON_VERSION)
+	@if [ -n "$(REQUIREMENTS)" ]; then \
+		$(ACTIVATE); pip install $(REQUIREMENTS); \
+	fi
+
 test:
 	@failed=""; \
 	for test in $(TESTS); do \
