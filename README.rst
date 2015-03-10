@@ -1,6 +1,10 @@
 ===========
 FuZzy SheLl
 ===========
+
+.. image:: https://travis-ci.org/jsbronder/fzsl.svg?branch=master
+    :target: https://travis-ci.org/jsbronder/fzsl
+
 Introduction
 ------------
 
