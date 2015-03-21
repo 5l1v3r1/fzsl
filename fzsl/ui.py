@@ -194,8 +194,8 @@ class SimplePager(object):
                 # ctrl+v
                 self._show_score = not self._show_score
                 self._draw_select()
-            elif key in ('^[',):
-                # escape
+            elif key in ('^[', '^C'):
+                # escape or ctrl+c
                 return ''
             elif c in (curses.KEY_RESIZE,):
                 y, x = self._scr.getmaxyx()
