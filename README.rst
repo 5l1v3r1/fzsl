@@ -192,7 +192,7 @@ support editing of the query.  The following keybindings are defined.
 - **Left Arrow**:  Move the cursor left.
 - **Right Arrow**:  Move the cursor right.
 - **ctrl+v**:  Enter verbose move which shows the scores for each path.
-- **Escape**:  Exit the UI without echoing the currently selected path.
+- **Escape**/**ctrl+c**:  Exit the UI without echoing the currently selected path.
 - **Backspace**:  Delete the character behind the cursor.
 - **F5**/**ctrl+r**: If the scanner has a cache, refresh it.
 
