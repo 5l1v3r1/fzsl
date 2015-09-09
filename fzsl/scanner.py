@@ -132,7 +132,7 @@ class SimpleScanner(Scanner):
                 if c.returncode != 0:
                     raise SubprocessError(root_path[1:], os.path.realpath(os.curdir), stderr)
 
-                self._root_path = stdout.strip()
+                self._root_path = stdout.strip().decode('UTF-8')
             else:
                 root_path = os.path.expandvars(root_path)
                 root_path = os.path.expanduser(root_path)

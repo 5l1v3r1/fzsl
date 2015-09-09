@@ -39,6 +39,14 @@ class SimpleScannerTest(unittest.TestCase):
         self.assertFalse(s.is_suitable(os.path.dirname(TESTDIR)))
         self.assertFalse(s.is_suitable('%s/../' % (TESTDIR,)))
 
+    def test_root_path_cmd(self):
+        s = fzsl.SimpleScanner(
+                'test',
+                'echo',
+                root_path='!echo %s' % (TESTDIR,),
+                detect_cmd='true')
+        self.assertTrue(s.is_suitable(TESTDIR))
+
     def test_detect_cmd_match(self):
         cmd = '[ -f %s ]' % (self.bn,)
         s = fzsl.SimpleScanner('test', 'echo', detect_cmd=cmd)

@@ -152,16 +152,13 @@ class SimplePager(object):
         self._prompt.move(y, search_start + self._cursor_x)
         self._prompt.refresh()
 
-    def _scan(self, rescan=False):
-        return [f.encode('unicode-escape') for f in self._scanner.scan(rescan=rescan)]
-
     def run(self):
         """
         Start the pager.
         """
         self._scr.addstr("Scanning ...")
         self._scr.refresh()
-        files = self._scan()
+        files = self._scanner.scan()
         self._fm.add_files(files)
 
         self._draw_select()
