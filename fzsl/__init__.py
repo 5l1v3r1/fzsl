@@ -18,3 +18,18 @@ from . scanner import (
     UnknownTypeError,
 )
 
+__all__ = [
+    'FuzzyMatch',
+
+    'ncurses',
+    'SimplePager',
+
+    'ConfigError',
+    'NoTypeError',
+    'Scanner',
+    'scanner_from_configparser',
+    'SimpleScanner',
+    'StaticScanner',
+    'SubprocessError',
+    'UnknownTypeError',
+]

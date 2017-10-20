@@ -7,9 +7,8 @@ import six
 
 import fzsl
 
-for i, color in enumerate(('white', 'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan')):
-    vars()['COL_%s' % (color.upper())] = i
-    vars()['COL_B%s' % (color.upper())] = i + 8
+
+COL_BCYAN = 15
 
 
 @contextlib.contextmanager
@@ -37,13 +36,14 @@ def ncurses():
     # Reduce the timeout after receiving an escape character, there
     # doesn't seem to be a way to do this via curses so we have to
     # set the environment variable before creating the screen.
-    if not 'ESCDELAY' in os.environ:
-        os.environ['ESCDELAY'] =  '25'
+    if 'ESCDELAY' not in os.environ:
+        os.environ['ESCDELAY'] = '25'
 
     scr = curses.initscr()
     curses.start_color()
     curses.use_default_colors()
-    _ = [curses.init_pair(i + 1, i, -1) for i in range(curses.COLORS)]
+    for i in range(curses.COLORS):
+        curses.init_pair(i + 1, i, -1)
 
     curses.noecho()
     curses.cbreak()
@@ -55,7 +55,6 @@ def ncurses():
     exc = None
     try:
         yield scr
-    #pylint: disable=W0703
     except Exception:
         exc = sys.exc_info()
 
@@ -93,7 +92,7 @@ class SimplePager(object):
 
         y, x = self._scr.getmaxyx()
 
-        self._prompt = curses.newwin(1, x, y-1, 0)
+        self._prompt = curses.newwin(1, x, y - 1, 0)
         self._select = curses.newwin(y - 2, x, 0, 0)
         self._max_y = y - 2
         self._max_x = x - 1
@@ -133,9 +132,13 @@ class SimplePager(object):
 
             self._select.addstr(line, 0, prefix + match[:start], decor)
             if start + offset < self._max_x:
-                self._select.addstr(line, start+offset, match[start:end], decor|curses.color_pair(COL_BCYAN))
+                self._select.addstr(
+                    line,
+                    start + offset,
+                    match[start:end],
+                    decor | curses.color_pair(COL_BCYAN))
             if end + offset < self._max_x:
-                self._select.addstr(line, end+offset, match[end:], decor)
+                self._select.addstr(line, end + offset, match[end:], decor)
         self._select.refresh()
 
     def _draw_prompt(self):
@@ -171,13 +174,15 @@ class SimplePager(object):
             if key in (u'^M',):
                 # enter
                 break
-            elif key  in ('KEY_DOWN', '^J'):
+            elif key in ('KEY_DOWN', '^J'):
                 # down arrow, ctrl+j
-                self._selection = self._selection - 1 if self._selection > 0 else 0
+                if self.selection > 0:
+                    self._selection -= 1
                 self._draw_select()
-            elif key  in ('KEY_UP', '^K'):
+            elif key in ('KEY_UP', '^K'):
                 # up arrow, ctrl+k
-                self._selection = self._selection + 1 if self._selection < self._max_y - 2 else self._selection
+                if self._selection < self._max_y - 2:
+                    self._selection += 1
                 self._draw_select()
             elif key in ('KEY_LEFT',):
                 if self._cursor_x > 0:
@@ -197,8 +202,8 @@ class SimplePager(object):
             elif c in (curses.KEY_RESIZE,):
                 y, x = self._scr.getmaxyx()
 
-                # Have to handle the parent screen fully first otherwise updates
-                # to the subwindows don't seem to take.
+                # Have to handle the parent screen fully first otherwise
+                # updates to the subwindows don't seem to take.
                 curses.resizeterm(y, x)
                 self._scr.resize(y, x)
                 self._scr.erase()
@@ -212,7 +217,7 @@ class SimplePager(object):
                 self._draw_select()
 
                 self._prompt.resize(1, x)
-                self._prompt.mvwin(y-1, 0)
+                self._prompt.mvwin(y - 1, 0)
                 self._draw_prompt()
             else:
                 if key in ('KEY_BACKSPACE',):
@@ -244,4 +249,3 @@ class SimplePager(object):
             return self._scanner.transform(match)
         except IndexError:
             return ''
-

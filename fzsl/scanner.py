@@ -11,14 +11,18 @@ class SubprocessError(Exception):
         super(SubprocessError, self).__init__(
                 'Failed to run: "%s" in %s: %s' % (cmd, cwd, error))
 
+
 class NoTypeError(Exception):
     pass
+
 
 class UnknownTypeError(Exception):
     pass
 
+
 class ConfigError(Exception):
     pass
+
 
 @functools.total_ordering
 class Scanner(object, six.with_metaclass(abc.ABCMeta)):
@@ -33,7 +37,6 @@ class Scanner(object, six.with_metaclass(abc.ABCMeta)):
         """
         self._name = name
         self._priority = priority
-
 
     def __eq__(self, other):
         return (self._name == other._name
@@ -83,7 +86,14 @@ class Scanner(object, six.with_metaclass(abc.ABCMeta)):
 
 
 class SimpleScanner(Scanner):
-    def __init__(self, name, cmd, priority=0, detect_cmd=None, root_path=None, cache=None):
+    def __init__(
+            self,
+            name,
+            cmd,
+            priority=0,
+            detect_cmd=None,
+            root_path=None,
+            cache=None):
         """
         Create a scanner.
 
@@ -127,10 +137,16 @@ class SimpleScanner(Scanner):
                             stderr=subprocess.PIPE)
                     stdout, stderr = c.communicate()
                 except OSError:
-                    raise SubprocessError(root_path[1:], os.path.realpath(os.curdir), stderr)
+                    raise SubprocessError(
+                        root_path[1:],
+                        os.path.realpath(os.curdir),
+                        stderr)
 
                 if c.returncode != 0:
-                    raise SubprocessError(root_path[1:], os.path.realpath(os.curdir), stderr)
+                    raise SubprocessError(
+                        root_path[1:],
+                        os.path.realpath(os.curdir),
+                        stderr)
 
                 self._root_path = stdout.strip().decode('UTF-8')
             else:
@@ -158,7 +174,8 @@ class SimpleScanner(Scanner):
         """
         kwds = {}
         if parser.has_option(section, 'detect_cmd'):
-            kwds['detect_cmd'] = parser.get(section, 'detect_cmd').replace('\n', ' ')
+            dcmd = parser.get(section, 'detect_cmd').replace('\n', ' ')
+            kwds['detect_cmd'] = dcmd
 
         if parser.has_option(section, 'root_path'):
             kwds['root_path'] = parser.get(section, 'root_path')
@@ -369,6 +386,7 @@ def plugin_scanner_from_configparser(section, parser):
 
     return scanner
 
+
 def scanner_from_configparser(section, parser):
     """
     Create a Scanner from a config parser section.
@@ -392,4 +410,3 @@ def scanner_from_configparser(section, parser):
             scanner_type, section))
 
     return scanner
-
