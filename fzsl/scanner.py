@@ -3,8 +3,6 @@ import functools
 import os
 import subprocess
 
-import six
-
 
 class SubprocessError(Exception):
     def __init__(self, cmd, cwd, error):
@@ -25,7 +23,7 @@ class ConfigError(Exception):
 
 
 @functools.total_ordering
-class Scanner(object, six.with_metaclass(abc.ABCMeta)):
+class Scanner(object, metaclass=abc.ABCMeta):
     def __init__(self, name, priority=0):
         """
         @param name         - name of the Scanner.

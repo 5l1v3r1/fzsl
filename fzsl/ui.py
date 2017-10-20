@@ -3,8 +3,6 @@ import curses
 import os
 import sys
 
-import six
-
 import fzsl
 
 
@@ -68,7 +66,7 @@ def ncurses():
     sys.stdout = old_stdout
 
     if exc is not None:
-        six.reraise(exc[0], exc[1], exc[2])
+        exc[0].with_traceback(exc[1], exc[2])
 
 
 class SimplePager(object):
