@@ -29,8 +29,8 @@ class Benchmark(unittest.TestCase):
                 stats = pstats.Stats(pr)
                 pr.clear()
                 self.assertLess(stats.total_tt, 10)
-                print "%d/%d" % (len(fm._library), len([f for f in fm._library.values() if f.round_ejected == 0]))
-                print 'search for %-20s: %f' % (search[:i], stats.total_tt)
+                print("%d/%d" % (len(fm._library), len([f for f in fm._library.values() if f.round_ejected == 0])))
+                print('search for %-20s: %f' % (search[:i], stats.total_tt))
             print('\n'.join(fm.top_matches()))
             self.assertIn(
                     '/usr/src/linux/drivers/net/ethernet/intel/e1000e/phy.c',
