@@ -9,3 +9,4 @@ fzsl.egg-info/
 dist/
 installed_files.txt
 .tox/*
+.python-version
