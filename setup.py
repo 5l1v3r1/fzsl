@@ -1,23 +1,21 @@
 #!/usr/bin/env python
-import os
+
+VERSION = '0.4'
+PACKAGE = 'fzsl'
+
 import setuptools
 
-def read(*paths):
-    """Build a file path from *paths* and return the contents."""
-    with open(os.path.join(*paths), 'r') as f:
-        return f.read()
-
 setuptools.setup(
-        name='fzsl',
+        name=PACKAGE,
         version='0.4',
         description='Fuzzy path searching for shells',
         license='BSD',
-        long_description=(read('README.rst')),
+        long_description=open('README.rst').read(),
         author='Justin Bronder',
-        author_email='jsbronder@gmail.com',
-        url='http://github.com/jsbronder/fzsl',
+        author_email='jsbronder@cold-front.org',
+        url='http://github.com/jsbronder/%s' % (PACKAGE,),
         keywords='fuzzy shell search console match ncurses',
-        packages=['fzsl'],
+        packages=[PACKAGE],
         package_data = {
           '': ['*.rst', 'etc/fzsl.*', 'LICENSE'],
         },

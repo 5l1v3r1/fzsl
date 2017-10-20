@@ -1,44 +1,37 @@
-SHELL = /bin/bash
+SHELL = /usr/bin/env bash
 
-PYTHON_VERSION ?= $(shell python -c 'import sys;print("%d.%d" % (sys.version_info[0], sys.version_info[1]))')
+TOPDIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-ACTIVATE = source virtualenv$(PYTHON_VERSION)/bin/activate
-REQUIREMENTS = $(shell cat requirements.txt)
-TESTS = $(wildcard test/test_*.py)
-VERSION = $(shell python setup.py --version)
-MODULE_FILES = $(wildcard fzsl/*.py) bin/fzsl etc/fzsl.bash etc/fzsl.conf
-VIRTUALENV ?= /usr/bin/env virtualenv
+PACKAGE := $(shell python setup.py --name)
+TESTS := $(wildcard test/test_*.py)
+VERSION := $(shell python setup.py --version)
 
-.PHONY: test dist
+MODULE_FILES := $(shell find $(PACKAGE) -type f -name '*.py')
+BIN_FILES := $(wildcard bin/*)
+REQUIREMENTS := $(wildcard requirements*.txt)
 
-all: virtualenv$(PYTHON_VERSION)
+FLAKE_TARGETS := $(MODULE_FILES) $(BIN_FILES)
+TEST_TARGETS := $(TESTS:test/test_%.py=test_%)
 
-dist: dist/fzsl-$(VERSION).tar.gz
+.PHONY: requirements $(REQUIREMENTS) flake test $(TEST_TARGETS) install clean
 
-build:
-	python setup.py build
+all: dist
 
-install: build
-	sudo python setup.py install \
-		--record installed_files.txt \
-		--single-version-externally-managed
 
-uninstall:
-	@if [ -e "installed_files.txt" ]; then \
-		while read path; do \
-			echo $${path}; \
-			sudo rm -rf $${path}; \
-		done < "installed_files.txt"; \
-		rm -f installed_files.txt; \
-	fi
+requirements: $(REQUIREMENTS)
+$(REQUIREMENTS):
+	@pip install -r $@
 
-virtualenv$(PYTHON_VERSION): requirements.txt
-	@$(VIRTUALENV) --python=python$(PYTHON_VERSION) virtualenv$(PYTHON_VERSION)
-	@if [ -n "$(REQUIREMENTS)" ]; then \
-		$(ACTIVATE); pip install $(REQUIREMENTS); \
-	fi
 
-test:
+dist: dist/$(PACKAGE)-$(VERSION).tar.gz
+dist/$(PACKAGE)-$(VERSION).tar.gz: $(MODULE_FILES) setup.py
+	python setup.py sdist
+
+
+flake:
+	flake8 --filename='*' $(FLAKE_TARGETS)
+
+test: flake
 	@failed=""; \
 	for test in $(TESTS); do \
 		echo "Testing $${test#*_}"; \
@@ -54,16 +47,15 @@ test:
 	else \
 		echo "All tests passed."; \
 	fi
+$(TEST_TARGETS):
+	python test/$(@).py -v
 
-dist/fzsl-$(VERSION).tar.gz: virtualenv$(PYTHON_VERSION) $(MODULE_FILES) setup.py
-	python setup.py sdist
 
-dev-install: dist/fzsl-$(VERSION).tar.gz
-	$(ACTIVATE); pip install --no-deps \
-		--upgrade --force-reinstall --no-index dist/fzsl-$(VERSION).tar.gz
+install: dist
+	pip install --no-deps \
+		--upgrade --force-reinstall --no-index dist/$(PACKAGE)-$(VERSION).tar.gz
+
 
 clean:
-	rm -rf virtualenv[23]*
-	rm -rf build
 	rm -rf dist
-	rm -rf fzsl.egg-info
+	rm -rf $(PACKAGE).egg-info
