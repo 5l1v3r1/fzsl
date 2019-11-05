@@ -218,7 +218,7 @@ class SimplePager(object):
                 self._prompt.mvwin(y - 1, 0)
                 self._draw_prompt()
             else:
-                if key in ('KEY_BACKSPACE',):
+                if key in ('KEY_BACKSPACE', '^?', '^b'):
                     # delete, backspace
                     if self._cursor_x > 0:
                         start = self._search[:self._cursor_x - 1]
