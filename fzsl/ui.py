@@ -66,7 +66,7 @@ def ncurses():
     sys.stdout = old_stdout
 
     if exc is not None:
-        exc[0].with_traceback(exc[1], exc[2])
+        raise exc[0].with_traceback(exc[1], exc[2])
 
 
 class SimplePager(object):
