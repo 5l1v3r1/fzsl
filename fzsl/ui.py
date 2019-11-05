@@ -174,7 +174,7 @@ class SimplePager(object):
                 break
             elif key in ('KEY_DOWN', '^J'):
                 # down arrow, ctrl+j
-                if self.selection > 0:
+                if self._selection > 0:
                     self._selection -= 1
                 self._draw_select()
             elif key in ('KEY_UP', '^K'):
