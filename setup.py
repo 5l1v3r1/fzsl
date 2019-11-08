@@ -16,6 +16,7 @@ setuptools.setup(
     keywords="fuzzy shell search console match ncurses",
     packages=[PACKAGE],
     package_data={"": ["*.rst", "etc/fzsl.*", "LICENSE"]},
+    python_requires=">=3.6",
     data_files=[
         ("share/fzsl/", ["README.rst", "LICENSE", "etc/fzsl.bash", "etc/fzsl.conf"]),
     ],
@@ -31,8 +32,6 @@ setuptools.setup(
         "Operating System :: POSIX",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
         "Topic :: System :: Shells",
         "Topic :: System :: Systems Administration",
         "Topic :: System :: System Shells",
