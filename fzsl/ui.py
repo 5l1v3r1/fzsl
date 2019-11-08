@@ -2,6 +2,7 @@ import contextlib
 import curses
 import os
 import sys
+import termios
 
 import fzsl
 
@@ -165,6 +166,11 @@ class SimplePager(object):
         self._draw_select()
         self._draw_prompt()
 
+        # Don't trust the terminal to actually follow the terminfo, this is
+        # good enough for tmux and we're just using it as a backup.
+        tio = termios.tcgetattr(sys.stdin.fileno())
+        verase = int.from_bytes(tio[6][termios.VERASE], byteorder=sys.byteorder)
+
         while True:
             c = self._scr.getch()
             key = curses.keyname(c).decode('UTF-8')
@@ -218,7 +224,7 @@ class SimplePager(object):
                 self._prompt.mvwin(y - 1, 0)
                 self._draw_prompt()
             else:
-                if key in ('KEY_BACKSPACE', '^?', '^b'):
+                if key == 'KEY_BACKSPACE' or c == verase:
                     # delete, backspace
                     if self._cursor_x > 0:
                         start = self._search[:self._cursor_x - 1]
