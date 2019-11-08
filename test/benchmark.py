@@ -1,13 +1,11 @@
 import cProfile
 import os
 import pstats
-import sys
 import unittest
 
-TESTDIR = os.path.realpath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.realpath(os.path.join(TESTDIR, "..")))
-
 import fzsl
+
+TESTDIR = os.path.realpath(os.path.dirname(__file__))
 
 
 class Benchmark(unittest.TestCase):
