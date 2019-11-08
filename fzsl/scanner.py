@@ -7,7 +7,8 @@ import subprocess
 class SubprocessError(Exception):
     def __init__(self, cmd, cwd, error):
         super(SubprocessError, self).__init__(
-                'Failed to run: "%s" in %s: %s' % (cmd, cwd, error))
+            'Failed to run: "%s" in %s: %s' % (cmd, cwd, error)
+        )
 
 
 class NoTypeError(Exception):
@@ -37,8 +38,7 @@ class Scanner(object, metaclass=abc.ABCMeta):
         self._priority = priority
 
     def __eq__(self, other):
-        return (self._name == other._name
-                and self._priority == other._priority)
+        return self._name == other._name and self._priority == other._priority
 
     def __lt__(self, other):
         return self._priority < other._priority
@@ -85,13 +85,8 @@ class Scanner(object, metaclass=abc.ABCMeta):
 
 class SimpleScanner(Scanner):
     def __init__(
-            self,
-            name,
-            cmd,
-            priority=0,
-            detect_cmd=None,
-            root_path=None,
-            cache=None):
+        self, name, cmd, priority=0, detect_cmd=None, root_path=None, cache=None
+    ):
         """
         Create a scanner.
 
@@ -125,28 +120,27 @@ class SimpleScanner(Scanner):
         self._cache = None
 
         if root_path is not None:
-            if root_path.startswith('!'):
+            if root_path.startswith("!"):
                 try:
                     c = subprocess.Popen(
-                            root_path[1:],
-                            shell=True,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                        root_path[1:],
+                        shell=True,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                    )
                     stdout, stderr = c.communicate()
                 except OSError:
                     raise SubprocessError(
-                        root_path[1:],
-                        os.path.realpath(os.curdir),
-                        stderr)
+                        root_path[1:], os.path.realpath(os.curdir), stderr
+                    )
 
                 if c.returncode != 0:
                     raise SubprocessError(
-                        root_path[1:],
-                        os.path.realpath(os.curdir),
-                        stderr)
+                        root_path[1:], os.path.realpath(os.curdir), stderr
+                    )
 
-                self._root_path = stdout.strip().decode('UTF-8')
+                self._root_path = stdout.strip().decode("UTF-8")
             else:
                 root_path = os.path.expandvars(root_path)
                 root_path = os.path.expanduser(root_path)
@@ -171,20 +165,20 @@ class SimpleScanner(Scanner):
         @param config_section   - config parser object defining a scanner.
         """
         kwds = {}
-        if parser.has_option(section, 'detect_cmd'):
-            dcmd = parser.get(section, 'detect_cmd').replace('\n', ' ')
-            kwds['detect_cmd'] = dcmd
+        if parser.has_option(section, "detect_cmd"):
+            dcmd = parser.get(section, "detect_cmd").replace("\n", " ")
+            kwds["detect_cmd"] = dcmd
 
-        if parser.has_option(section, 'root_path'):
-            kwds['root_path'] = parser.get(section, 'root_path')
+        if parser.has_option(section, "root_path"):
+            kwds["root_path"] = parser.get(section, "root_path")
 
-        if parser.has_option(section, 'priority'):
-            kwds['priority'] = parser.get(section, 'priority')
+        if parser.has_option(section, "priority"):
+            kwds["priority"] = parser.get(section, "priority")
 
-        if parser.has_option(section, 'cache'):
-            kwds['cache'] = parser.get(section, 'cache')
+        if parser.has_option(section, "cache"):
+            kwds["cache"] = parser.get(section, "cache")
 
-        cmd = parser.get(section, 'cmd').replace('\n', ' ')
+        cmd = parser.get(section, "cmd").replace("\n", " ")
 
         return cls(section, cmd, **kwds)
 
@@ -206,14 +200,15 @@ class SimpleScanner(Scanner):
 
         if self._detect_cmd is not None:
             try:
-                stderr = ''
+                stderr = ""
                 c = subprocess.Popen(
-                        self._detect_cmd,
-                        cwd=path,
-                        shell=True,
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
+                    self._detect_cmd,
+                    cwd=path,
+                    shell=True,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
                 _, stderr = c.communicate()
             except OSError:
                 raise SubprocessError(self._detect_cmd, path, stderr)
@@ -247,7 +242,7 @@ class SimpleScanner(Scanner):
         ret = None
 
         if have_cache and not rescan:
-            with open(self._cache, 'r') as fp:
+            with open(self._cache, "r") as fp:
                 ret = [f.strip() for f in fp.read().split()]
         else:
             if path is None:
@@ -256,14 +251,15 @@ class SimpleScanner(Scanner):
             cwd = path if self._root_path is None else self._root_path
 
             try:
-                stdout = stderr = ''
+                stdout = stderr = ""
                 c = subprocess.Popen(
-                        self._cmd,
-                        cwd=cwd,
-                        shell=True,
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
+                    self._cmd,
+                    cwd=cwd,
+                    shell=True,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
                 stdout, stderr = c.communicate()
             except OSError:
                 raise SubprocessError(self._cmd, cwd, stderr)
@@ -271,11 +267,11 @@ class SimpleScanner(Scanner):
             if c.returncode != 0:
                 raise SubprocessError(self._cmd, cwd, stderr)
 
-            ret = [f.strip().decode('UTF-8') for f in stdout.split()]
+            ret = [f.strip().decode("UTF-8") for f in stdout.split()]
 
             if self._cache is not None:
-                with open(self._cache, 'w') as fp:
-                    fp.write(u'\n'.join(ret))
+                with open(self._cache, "w") as fp:
+                    fp.write(u"\n".join(ret))
 
         return ret
 
@@ -349,38 +345,37 @@ def plugin_scanner_from_configparser(section, parser):
     @return         - Object derived from the base Scanner class as
                       defined by the config section
     """
-    if not parser.has_option(section, 'path'):
+    if not parser.has_option(section, "path"):
         raise ConfigError('path not specified for section "%s"' % (section,))
 
-    if not parser.has_option(section, 'object'):
+    if not parser.has_option(section, "object"):
         raise ConfigError('object not specified for section "%s"' % (section,))
 
     kwds = {}
     for option in parser.options(section):
-        if option in ('type', 'path', 'object'):
+        if option in ("type", "path", "object"):
             continue
         kwds[option] = parser.get(section, option)
 
     env = {}
-    path = parser.get(section, 'path')
-    obj = parser.get(section, 'object')
+    path = parser.get(section, "path")
+    obj = parser.get(section, "object")
 
     try:
         with open(path) as fp:
-            exec(compile(fp.read(), path, 'exec'), env)
+            exec(compile(fp.read(), path, "exec"), env)
     except Exception as e:
-        raise ConfigError('Failed to load plugin "%s": %s' % (
-            path, str(e)))
+        raise ConfigError('Failed to load plugin "%s": %s' % (path, str(e)))
 
     try:
         scanner = env[obj](**kwds)
     except Exception as e:
-        raise ConfigError('Failed to create %s:%s with args %s: %s' % (
-            path, obj, str(kwds), str(e)))
+        raise ConfigError(
+            "Failed to create %s:%s with args %s: %s" % (path, obj, str(kwds), str(e))
+        )
 
     if not isinstance(scanner, Scanner):
-        raise ConfigError('%s:%s is not an instance of fzsl.Scanner' % (
-            path, obj))
+        raise ConfigError("%s:%s is not an instance of fzsl.Scanner" % (path, obj))
 
     return scanner
 
@@ -394,17 +389,18 @@ def scanner_from_configparser(section, parser):
     @return         - Object derived from the base Scanner class as
                       defined by the config section
     """
-    if not parser.has_option(section, 'type'):
+    if not parser.has_option(section, "type"):
         raise NoTypeError('type not specified for section "%s"' % (section,))
 
-    scanner_type = parser.get(section, 'type')
+    scanner_type = parser.get(section, "type")
 
-    if scanner_type == 'simple':
+    if scanner_type == "simple":
         scanner = SimpleScanner.from_configparser(section, parser)
-    elif scanner_type == 'python':
+    elif scanner_type == "python":
         scanner = plugin_scanner_from_configparser(section, parser)
     else:
-        raise UnknownTypeError('Unknown type "%s" for section "%s"' % (
-            scanner_type, section))
+        raise UnknownTypeError(
+            'Unknown type "%s" for section "%s"' % (scanner_type, section)
+        )
 
     return scanner

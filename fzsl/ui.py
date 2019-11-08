@@ -35,8 +35,8 @@ def ncurses():
     # Reduce the timeout after receiving an escape character, there
     # doesn't seem to be a way to do this via curses so we have to
     # set the environment variable before creating the screen.
-    if 'ESCDELAY' not in os.environ:
-        os.environ['ESCDELAY'] = '25'
+    if "ESCDELAY" not in os.environ:
+        os.environ["ESCDELAY"] = "25"
 
     scr = curses.initscr()
     curses.start_color()
@@ -87,7 +87,7 @@ class SimplePager(object):
         self._show_score = False
         self._fm = fzsl.FuzzyMatch()
         self._selection = 0
-        self._search = ''
+        self._search = ""
 
         y, x = self._scr.getmaxyx()
 
@@ -111,9 +111,9 @@ class SimplePager(object):
             if len(self._search) > 0 and self._fm.score(match) == 0:
                 continue
 
-            prefix = u''
+            prefix = u""
             if self._show_score:
-                prefix = u'%f     ' % (self._fm.score(match),)
+                prefix = u"%f     " % (self._fm.score(match),)
             offset = len(prefix)
 
             start = self._fm.start(match)
@@ -125,7 +125,7 @@ class SimplePager(object):
             if self._selection == index:
                 decor = curses.A_UNDERLINE
 
-            match = match[:self._max_x]
+            match = match[: self._max_x]
             start = min(start, self._max_x)
             end = min(end, self._max_x)
 
@@ -135,7 +135,8 @@ class SimplePager(object):
                     line,
                     start + offset,
                     match[start:end],
-                    decor | curses.color_pair(COL_BCYAN))
+                    decor | curses.color_pair(COL_BCYAN),
+                )
             if end + offset < self._max_x:
                 self._select.addstr(line, end + offset, match[end:], decor)
         self._select.refresh()
@@ -173,36 +174,36 @@ class SimplePager(object):
 
         while True:
             c = self._scr.getch()
-            key = curses.keyname(c).decode('UTF-8')
+            key = curses.keyname(c).decode("UTF-8")
 
-            if key in (u'^M',):
+            if key in (u"^M",):
                 # enter
                 break
-            elif key in ('KEY_DOWN', '^J'):
+            elif key in ("KEY_DOWN", "^J"):
                 # down arrow, ctrl+j
                 if self._selection > 0:
                     self._selection -= 1
                 self._draw_select()
-            elif key in ('KEY_UP', '^K'):
+            elif key in ("KEY_UP", "^K"):
                 # up arrow, ctrl+k
                 if self._selection < self._max_y - 2:
                     self._selection += 1
                 self._draw_select()
-            elif key in ('KEY_LEFT',):
+            elif key in ("KEY_LEFT",):
                 if self._cursor_x > 0:
                     self._cursor_x -= 1
                     self._draw_prompt()
-            elif key in ('KEY_RIGHT',):
+            elif key in ("KEY_RIGHT",):
                 if self._cursor_x < len(self._search):
                     self._cursor_x += 1
                     self._draw_prompt()
-            elif key in ('^V',):
+            elif key in ("^V",):
                 # ctrl+v
                 self._show_score = not self._show_score
                 self._draw_select()
-            elif key in ('^[', '^C'):
+            elif key in ("^[", "^C"):
                 # escape or ctrl+c
-                return ''
+                return ""
             elif c in (curses.KEY_RESIZE,):
                 y, x = self._scr.getmaxyx()
 
@@ -224,22 +225,22 @@ class SimplePager(object):
                 self._prompt.mvwin(y - 1, 0)
                 self._draw_prompt()
             else:
-                if key == 'KEY_BACKSPACE' or c == verase:
+                if key == "KEY_BACKSPACE" or c == verase:
                     # delete, backspace
                     if self._cursor_x > 0:
-                        start = self._search[:self._cursor_x - 1]
-                        end = self._search[self._cursor_x:]
+                        start = self._search[: self._cursor_x - 1]
+                        end = self._search[self._cursor_x :]
                         self._search = start + end
                         self._cursor_x -= 1
-                elif key in ('^R', 'KEY_F(5)'):
+                elif key in ("^R", "KEY_F(5)"):
                     self._scr.erase()
-                    self._scr.addstr('Scanning ...')
+                    self._scr.addstr("Scanning ...")
                     self._scr.refresh()
                     files = self._scan(rescan=True)
                     self._fm.reset_files(files)
                 else:
-                    start = self._search[:self._cursor_x]
-                    end = self._search[self._cursor_x:]
+                    start = self._search[: self._cursor_x]
+                    end = self._search[self._cursor_x :]
                     self._search = start + chr(c) + end
                     self._cursor_x += 1
 
@@ -252,4 +253,4 @@ class SimplePager(object):
             match = self._fm.top_matches(self._max_y)[self._selection]
             return self._scanner.transform(match)
         except IndexError:
-            return ''
+            return ""

@@ -65,6 +65,7 @@ def default_scorer(path, c_round, regex):
     """
     matches = [m for m in regex.finditer(path)]
     if matches:
+
         def score(match):
             return 1.0 / (len(path) - match.start(1))
 
@@ -94,7 +95,7 @@ class FuzzyMatch(object):
             self._library = {}
 
         self._scorer = scorer
-        self._search = ''
+        self._search = ""
 
         def pool_init():
             signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -106,8 +107,7 @@ class FuzzyMatch(object):
         """
         Number of paths which are candidates given the current query
         """
-        return len([info for info in self._library.values()
-            if info.round_ejected == 0])
+        return len([info for info in self._library.values() if info.round_ejected == 0])
 
     @property
     def n_files(self):
@@ -170,12 +170,13 @@ class FuzzyMatch(object):
                 quick_score(path, info)
             return
 
-        pattern = '(?=(' + '.*?'.join(re.escape(c) for c in search) + '))'
+        pattern = "(?=(" + ".*?".join(re.escape(c) for c in search) + "))"
         regex = re.compile(pattern, re.IGNORECASE)
 
         scorer = functools.partial(self._scorer, c_round=s_len, regex=regex)
-        candidates = [path for path, info in self._library.items()
-            if info.round_ejected == 0]
+        candidates = [
+            path for path, info in self._library.items() if info.round_ejected == 0
+        ]
 
         for path, update in self._pool.map(scorer, candidates):
             self._library[path].update(*update)
@@ -214,14 +215,13 @@ class FuzzyMatch(object):
         @return         - sorted list of the top scoring paths in the library
         """
         if len(self._search) > 0:
-            valid = [path
-                    for path, info in self._library.items()
-                    if info.score > 0 and info.round_ejected == 0]
+            valid = [
+                path
+                for path, info in self._library.items()
+                if info.score > 0 and info.round_ejected == 0
+            ]
         else:
             valid = self._library.keys()
 
-        ret = heapq.nlargest(
-            depth,
-            valid,
-            key=lambda x: self._library[x].score)
+        ret = heapq.nlargest(depth, valid, key=lambda x: self._library[x].score)
         return ret
