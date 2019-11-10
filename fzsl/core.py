@@ -102,6 +102,9 @@ class FuzzyMatch(object):
 
         self._pool = multiprocessing.Pool(initializer=pool_init)
 
+    def __del__(self):
+        self._pool.close()
+
     @property
     def n_matches(self):
         """
